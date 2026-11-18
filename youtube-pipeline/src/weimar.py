@@ -1,5 +1,7 @@
 import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit import *
+import kit
+kit.ERA = "1920s"
 from tulip_v2 import stamp_img, slam
 STEEL=(60, 64, 72); NOTE=(196, 186, 150); NOTE_D=(110, 96, 70)
 

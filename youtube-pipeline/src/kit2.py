@@ -12,6 +12,16 @@ IRON, IRON_D = (110, 110, 116), (60, 60, 66)
 GREEN_UP, DECO = (70, 210, 120), (212, 175, 90)
 
 
+def card(d, box, items, fill=(250, 244, 226), outline=INK, pad=50):
+    """Draw a box and centre `items` [(text, font_name, size, colour)] inside it, shrinking text to fit."""
+    x0, y0, x1, y1 = box
+    d.rounded_rectangle(box, 20, fill=fill, outline=outline, width=5)
+    fonts = [fit(d, t, n, sz, (x1 - x0) - 2 * pad) for t, n, sz, _ in items]
+    hs = [f.size * 1.25 for f in fonts]; y = y0 + ((y1 - y0) - sum(hs)) / 2
+    for (t, n, sz, c), f, h in zip(items, fonts, hs):
+        w = d.textlength(t, font=f); d.text(((x0 + x1 - w) / 2, y + (h - f.size * 1.15) / 2), t, font=f, fill=c); y += h
+
+
 def cow(d, x, y, s, t):
     """A side-on cartoon cow standing with its feet on y."""
     b = math.sin(t * 3) * 3 * s

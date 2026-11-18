@@ -93,15 +93,81 @@ def house(d, x, base, s, col=BRICK):
     d.rectangle((x - 22 * s, base - 70 * s, x + 22 * s, base), fill=(60, 34, 24))
     d.ellipse((x - 18 * s, base - h - 120 * s, x + 18 * s, base - h - 84 * s), fill=(250, 236, 190))
 
-def merchant(d, x, y, s, t, mood="happy", coat=COAT, hat=True, hat_off=(0, 0), look=0, cap=False, arm=None, beard=True):
+ERA = "1600s"   # default costume; each video sets kit.ERA for its period
+
+
+def _hat(d, kind, hx, hy, s, col=(18, 16, 18)):
+    if kind == "tall":      # 1600s Dutch
+        d.ellipse((hx - 110 * s, hy - 66 * s, hx + 110 * s, hy - 34 * s), fill=col)
+        d.polygon([(hx - 62 * s, hy - 52 * s), (hx + 62 * s, hy - 52 * s), (hx + 52 * s, hy - 170 * s), (hx - 52 * s, hy - 170 * s)], fill=col)
+        d.rectangle((hx - 60 * s, hy - 84 * s, hx + 60 * s, hy - 66 * s), fill=GOLD)
+    elif kind == "tricorn":  # 1700s
+        d.polygon([(hx - 104 * s, hy - 60 * s), (hx, hy - 128 * s), (hx + 104 * s, hy - 60 * s), (hx + 60 * s, hy - 42 * s), (hx, hy - 54 * s), (hx - 60 * s, hy - 42 * s)], fill=col)
+        d.line([(hx - 104 * s, hy - 60 * s), (hx, hy - 128 * s), (hx + 104 * s, hy - 60 * s)], fill=GOLD, width=max(int(5 * s), 1))
+    elif kind == "fedora":   # 1920s
+        d.ellipse((hx - 96 * s, hy - 62 * s, hx + 96 * s, hy - 38 * s), fill=col)
+        d.rounded_rectangle((hx - 56 * s, hy - 128 * s, hx + 56 * s, hy - 48 * s), int(24 * s), fill=col)
+        d.polygon([(hx - 20 * s, hy - 128 * s), (hx, hy - 112 * s), (hx + 20 * s, hy - 128 * s)], fill=(60, 56, 60))
+        d.rectangle((hx - 56 * s, hy - 70 * s, hx + 56 * s, hy - 56 * s), fill=(120, 30, 34))
+    elif kind == "flatcap":  # 1920s worker
+        d.chord((hx - 66 * s, hy - 96 * s, hx + 66 * s, hy - 20 * s), 180, 360, fill=(90, 84, 76))
+        d.polygon([(hx + 20 * s, hy - 60 * s), (hx + 92 * s, hy - 48 * s), (hx + 40 * s, hy - 40 * s)], fill=(70, 64, 58))
+    elif kind == "cap":      # 1600s worker
+        d.chord((hx - 66 * s, hy - 90 * s, hx + 66 * s, hy - 10 * s), 180, 360, fill=(90, 60, 40))
+    elif kind == "futou":    # Song dynasty official hat with long wings
+        d.rectangle((hx - 56 * s, hy - 110 * s, hx + 56 * s, hy - 46 * s), fill=col)
+        d.rectangle((hx - 150 * s, hy - 92 * s, hx + 150 * s, hy - 82 * s), fill=col)
+    elif kind == "band":     # ancient headband
+        d.rectangle((hx - 62 * s, hy - 44 * s, hx + 62 * s, hy - 30 * s), fill=(170, 40, 40))
+
+
+def merchant(d, x, y, s, t, mood="happy", coat=COAT, hat=True, hat_off=(0, 0), look=0, cap=False, arm=None, beard=True, era=None, tie=(150, 30, 40)):
+    """A cartoon person. `era` picks the costume: 1600s, 1700s, 1920s, ancient, song."""
+    era = era or ERA
+    if era == "1700s": beard = False  # 18th-century men were usually clean-shaven
     b = math.sin(t * 5 + x) * 4 * s; y = y + b
-    d.rectangle((x - 46 * s, y - 100 * s, x - 14 * s, y), fill=(232, 222, 200)); d.rectangle((x + 14 * s, y - 100 * s, x + 46 * s, y), fill=(232, 222, 200))
-    d.ellipse((x - 62 * s, y - 16 * s, x - 6 * s, y + 10 * s), fill=(20, 16, 14)); d.ellipse((x + 6 * s, y - 16 * s, x + 62 * s, y + 10 * s), fill=(20, 16, 14))
-    d.polygon([(x - 78 * s, y - 330 * s), (x + 78 * s, y - 330 * s), (x + 104 * s, y - 92 * s), (x - 104 * s, y - 92 * s)], fill=coat)
-    for k in range(4): d.ellipse((x - 6 * s, y - 300 * s + k * 50 * s, x + 6 * s, y - 288 * s + k * 50 * s), fill=GOLD)
+    robe = era in ("ancient", "song")
+    # legs and feet
+    if era == "1920s":
+        trouser = tuple(max(c - 20, 0) for c in coat)
+        d.rectangle((x - 46 * s, y - 170 * s, x - 6 * s, y), fill=trouser); d.rectangle((x + 6 * s, y - 170 * s, x + 46 * s, y), fill=trouser)
+    elif not robe:
+        d.rectangle((x - 46 * s, y - 100 * s, x - 14 * s, y), fill=(232, 222, 200)); d.rectangle((x + 14 * s, y - 100 * s, x + 46 * s, y), fill=(232, 222, 200))
+    shoe = (120, 80, 50) if era == "ancient" else (20, 16, 14)
+    d.ellipse((x - 62 * s, y - 16 * s, x - 6 * s, y + 10 * s), fill=shoe); d.ellipse((x + 6 * s, y - 16 * s, x + 62 * s, y + 10 * s), fill=shoe)
+    # body
+    if robe:
+        d.polygon([(x - 78 * s, y - 330 * s), (x + 78 * s, y - 330 * s), (x + 110 * s, y - 10 * s), (x - 110 * s, y - 10 * s)], fill=coat)
+        if era == "ancient":
+            d.rectangle((x - 92 * s, y - 210 * s, x + 92 * s, y - 186 * s), fill=(200, 160, 70))
+        else:
+            d.line([(x - 50 * s, y - 330 * s), (x + 30 * s, y - 200 * s)], fill=(250, 244, 230), width=max(int(10 * s), 1))
+            d.rectangle((x - 96 * s, y - 220 * s, x + 96 * s, y - 196 * s), fill=(40, 40, 40))
+    elif era == "1700s":
+        d.polygon([(x - 78 * s, y - 330 * s), (x + 78 * s, y - 330 * s), (x + 116 * s, y - 70 * s), (x - 116 * s, y - 70 * s)], fill=coat)
+        d.rectangle((x - 30 * s, y - 330 * s, x + 30 * s, y - 150 * s), fill=tuple(min(c + 60, 255) for c in coat))
+        for k in range(4): d.ellipse((x - 6 * s, y - 300 * s + k * 40 * s, x + 6 * s, y - 288 * s + k * 40 * s), fill=GOLD)
+    elif era == "1920s":
+        d.polygon([(x - 80 * s, y - 330 * s), (x + 80 * s, y - 330 * s), (x + 92 * s, y - 150 * s), (x - 92 * s, y - 150 * s)], fill=coat)
+        d.polygon([(x - 30 * s, y - 330 * s), (x + 30 * s, y - 330 * s), (x, y - 230 * s)], fill=(248, 248, 248))
+        d.polygon([(x - 9 * s, y - 326 * s), (x + 9 * s, y - 326 * s), (x + 12 * s, y - 250 * s), (x, y - 232 * s), (x - 12 * s, y - 250 * s)], fill=tie)
+        lap = tuple(max(c - 25, 0) for c in coat)
+        d.polygon([(x - 30 * s, y - 330 * s), (x - 52 * s, y - 300 * s), (x - 4 * s, y - 226 * s)], fill=lap); d.polygon([(x + 30 * s, y - 330 * s), (x + 52 * s, y - 300 * s), (x + 4 * s, y - 226 * s)], fill=lap)
+        d.ellipse((x - 5 * s, y - 200 * s, x + 5 * s, y - 190 * s), fill=(20, 20, 20))
+    else:
+        d.polygon([(x - 78 * s, y - 330 * s), (x + 78 * s, y - 330 * s), (x + 104 * s, y - 92 * s), (x - 104 * s, y - 92 * s)], fill=coat)
+        for k in range(4): d.ellipse((x - 6 * s, y - 300 * s + k * 50 * s, x + 6 * s, y - 288 * s + k * 50 * s), fill=GOLD)
     if arm:  # arm = (hand_x, hand_y) absolute
         d.line([(x + 60 * s, y - 300 * s), arm], fill=coat, width=int(34 * s)); d.ellipse((arm[0] - 18 * s, arm[1] - 18 * s, arm[0] + 18 * s, arm[1] + 18 * s), fill=SKIN)
-    for k in range(3): d.ellipse((x - 80 * s + k * 4 * s, y - 360 * s + k * 6 * s, x + 80 * s - k * 4 * s, y - 318 * s + k * 6 * s), fill=(250, 248, 240), outline=(200, 196, 186), width=2)
+    # collar / neck
+    if era == "1600s":
+        for k in range(3): d.ellipse((x - 80 * s + k * 4 * s, y - 360 * s + k * 6 * s, x + 80 * s - k * 4 * s, y - 318 * s + k * 6 * s), fill=(250, 248, 240), outline=(200, 196, 186), width=2)
+    else:
+        d.rectangle((x - 22 * s, y - 360 * s, x + 22 * s, y - 326 * s), fill=SKIN)
+        if era == "1700s":  # lace cravat
+            d.polygon([(x - 26 * s, y - 340 * s), (x + 26 * s, y - 340 * s), (x + 14 * s, y - 270 * s), (x, y - 256 * s), (x - 14 * s, y - 270 * s)], fill=(250, 248, 240), outline=(210, 206, 196))
+        elif era == "1920s":
+            d.polygon([(x - 24 * s, y - 344 * s), (x, y - 324 * s), (x - 30 * s, y - 318 * s)], fill=(248, 248, 248)); d.polygon([(x + 24 * s, y - 344 * s), (x, y - 324 * s), (x + 30 * s, y - 318 * s)], fill=(248, 248, 248))
     hy = y - 410 * s; d.ellipse((x - 60 * s, hy - 64 * s, x + 60 * s, hy + 60 * s), fill=SKIN)
     blink = (t % 3.3) < 0.12; ex = look * 8 * s
     for sx in (-1, 1):
@@ -109,17 +175,21 @@ def merchant(d, x, y, s, t, mood="happy", coat=COAT, hat=True, hat_off=(0, 0), l
         if blink: d.line([(cx - 10 * s, hy - 8 * s), (cx + 10 * s, hy - 8 * s)], fill=INK, width=max(int(4 * s), 1))
         else: d.ellipse((cx - 9 * s, hy - 18 * s, cx + 9 * s, hy + 2 * s), fill=INK)
         eb = -40 if mood == "shock" else -30
-        d.line([(cx - 14 * s, hy + (eb - (6 if mood == "shock" else 0) * sx * 0) * s), (cx + 14 * s, hy + (eb + (4 if mood == "smug" else 0) * sx) * s)], fill=(80, 50, 30), width=max(int(5 * s), 1))
-    if beard: d.polygon([(x - 26 * s, hy + 40 * s), (x + 26 * s, hy + 40 * s), (x, hy + 82 * s)], fill=(110, 70, 40)); d.line([(x - 26 * s, hy + 22 * s), (x, hy + 14 * s), (x + 26 * s, hy + 22 * s)], fill=(110, 70, 40), width=max(int(8 * s), 1))
+        d.line([(cx - 14 * s, hy + eb * s), (cx + 14 * s, hy + (eb + (4 if mood == "smug" else 0) * sx) * s)], fill=(80, 50, 30), width=max(int(5 * s), 1))
+    if beard:
+        if era == "1920s":  # 1920s: a neat moustache instead of a beard
+            d.line([(x - 22 * s, hy + 22 * s), (x, hy + 16 * s), (x + 22 * s, hy + 22 * s)], fill=(90, 60, 40), width=max(int(7 * s), 1))
+        elif era == "ancient":
+            d.chord((x - 50 * s, hy + 10 * s, x + 50 * s, hy + 100 * s), 0, 180, fill=(60, 40, 30))
+        else:
+            d.polygon([(x - 26 * s, hy + 40 * s), (x + 26 * s, hy + 40 * s), (x, hy + 82 * s)], fill=(110, 70, 40)); d.line([(x - 26 * s, hy + 22 * s), (x, hy + 14 * s), (x + 26 * s, hy + 22 * s)], fill=(110, 70, 40), width=max(int(8 * s), 1))
     if mood == "shock": d.ellipse((x - 12 * s, hy + 18 * s, x + 12 * s, hy + 48 * s), fill=(90, 20, 20))
     elif mood == "sad": d.arc((x - 20 * s, hy + 26 * s, x + 20 * s, hy + 50 * s), 200, 340, fill=INK, width=max(int(5 * s), 1))
     else: d.arc((x - 22 * s, hy + 6 * s, x + 22 * s, hy + 36 * s), 20, 160, fill=INK, width=max(int(5 * s), 1))
     hx, hyy = x + hat_off[0], hy + hat_off[1]
-    if cap: d.chord((x - 66 * s, hy - 90 * s, x + 66 * s, hy - 10 * s), 180, 360, fill=(90, 60, 40))
-    elif hat:
-        d.ellipse((hx - 110 * s, hyy - 66 * s, hx + 110 * s, hyy - 34 * s), fill=(18, 16, 18))
-        d.polygon([(hx - 62 * s, hyy - 52 * s), (hx + 62 * s, hyy - 52 * s), (hx + 52 * s, hyy - 170 * s), (hx - 52 * s, hyy - 170 * s)], fill=(18, 16, 18))
-        d.rectangle((hx - 60 * s, hyy - 84 * s, hx + 60 * s, hyy - 66 * s), fill=GOLD)
+    if cap: _hat(d, {"1920s": "flatcap"}.get(era, "cap"), hx, hyy, s)
+    elif hat: _hat(d, {"1600s": "tall", "1700s": "tricorn", "1920s": "fedora", "ancient": "band", "song": "futou"}[era], hx, hyy, s)
+
 
 def coin(d, x, y, s, a=255):
     d.ellipse((x - 26 * s, y - 26 * s, x + 26 * s, y + 26 * s), fill=(200, 150, 50, a), outline=(140, 98, 30, a), width=max(int(3 * s), 1))

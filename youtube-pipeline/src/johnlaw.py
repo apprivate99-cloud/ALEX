@@ -1,6 +1,8 @@
 """John Law: convicted murderer, France's money man, and the Mississippi Bubble."""
 import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
+import kit
+kit.ERA = "1700s"
 
 LAW_COAT, WIG_B, WIG_BD = (40, 50, 90), (120, 84, 50), (90, 60, 34)
 
@@ -55,6 +57,20 @@ def prison(lt, dur, T):
     return img
 
 
+def gambler(lt, dur, T):
+    img = bg("tavern").copy(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "A PROFESSIONAL GAMBLER", CREAM, (0, 0, 0, 170), 46)
+    tc(d, 330, "who studied money and banking", F("serif_bold", 50), CREAM, 5, INK)
+    law(d, 540, 1080, 0.85, T, "smug")
+    d.rounded_rectangle((120, 1000, 960, 1180), 30, fill=(30, 100, 60), outline=(90, 60, 40), width=14)
+    for i, (sym, col) in enumerate([("A", RED), ("K", INK), ("Q", RED), ("J", INK)]):
+        x = 260 + i * 120 + 6 * math.sin(T * 2 + i); y = 1040
+        d.rounded_rectangle((x - 44, y, x + 44, y + 120), 10, fill=(250, 250, 246), outline=(180, 180, 180), width=3)
+        d.text((x - 16, y + 30), sym, font=F("serif_bold", 52), fill=col)
+    for i in range(6): coin(d, 820 + (i % 3) * 30, 1110 - (i // 3) * 26, 1.2)
+    return img
+
+
 def france(lt, dur, T):
     img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA"); k = eio(lt / dur)
     draw_map(img, d, 2.5, 46.5, 60 + 20 * k, T, hl=("FRA",))
@@ -76,7 +92,6 @@ def idea(lt, dur, T):
         d.rounded_rectangle((680, 780, 980, 940), 12, fill=(236, 226, 196), outline=(90, 70, 40), width=6)
         tc(d, 800, "BANK NOTE", F("serif_bold", 40), INK, x=830); tc(d, 860, "100 livres", F("serif", 36), INK, x=830)
         tc(d, 1010, "paper money", F("serif_bold", 50), INK, x=830)
-    if lt > dur * 0.55: e2 = back((lt - dur * 0.55) / 0.4); pill(d, 1180 + 20 * (1 - e2), "1716: FRANCE GIVES HIM A BANK", CREAM, (150, 20, 34), 42)
     return img
 
 
@@ -91,6 +106,7 @@ def louisiana(lt, dur, T):
     for (x, y), lab in [((px, py), "PARIS"), ((nx, ny), "LOUISIANA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 200), W - 200))
     pill(d, 230, "THE MISSISSIPPI COMPANY", INK, GOLD, 48)
+    if lt < dur * 0.4: d.rectangle((0, 1240, W, 1340), fill=(10, 20, 30, 230)); tc(d, 1256, "1716: FRANCE GIVES LAW A BANK", F("sans_black", 50), GOLD)
     return img
 
 
@@ -117,11 +133,11 @@ def chart_up(lt, dur, T):
 def millionaire(lt, dur, T):
     img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
     tc(d, 220, "A NEW WORD", F("sans_black", 90), INK)
-    d.rounded_rectangle((110, 420, 970, 1000), 20, fill=(250, 244, 226), outline=INK, width=5)
     e = clamp(lt / 1.2); word = "millionaire"[: max(1, int(11 * e))]
-    d.text((170, 480), word, font=F("serif_bold", 120), fill=INK)
-    d.text((170, 650), "(noun)", font=F("serif", 46), fill=(110, 80, 50))
-    for i, ln in enumerate(["someone whose wealth", "runs into the millions"]): d.text((170, 730 + i * 70, ), ln, font=F("serif", 54), fill=INK)
+    d.rounded_rectangle((110, 400, 970, 1000), 20, fill=(250, 244, 226), outline=INK, width=5)
+    tc(d, 470, word, F("serif_bold", 120), INK)
+    for i, (ln, f, c) in enumerate([("(noun)", F("serif", 46), (110, 80, 50)), ("someone whose wealth", F("serif", 56), INK), ("runs into the millions", F("serif", 56), INK)]):
+        tc(d, 660 + i * 84, ln, f, c)
     if lt > dur * 0.55: e2 = back((lt - dur * 0.55) / 0.4); pill(d, 1090 + 20 * (1 - e2), "POPULARISED IN 1720", CREAM, (150, 20, 34), 44)
     return img
 
@@ -168,9 +184,8 @@ def venice(lt, dur, T):
 def twist(lt, dur, T):
     img = bg("burgundy").copy(); d = ImageDraw.Draw(img, "RGBA"); rays(d, T, (255, 200, 120, 14))
     tc(d, 220, "THE TWIST", F("sans_black", 110), GOLD)
-    d.rounded_rectangle((190, 440, 890, 840), 20, fill=(236, 226, 196), outline=(90, 70, 40), width=8)
-    d.rounded_rectangle((220, 470, 860, 810), 12, outline=(90, 70, 40), width=3)
-    tc(d, 520, "PAPER MONEY", F("serif_bold", 70), INK); tc(d, 640, "backed by", F("serif", 50), INK); tc(d, 700, "TRUST", F("sans_black", 80), RED)
+    card(d, (190, 420, 890, 840), [("PAPER MONEY", "serif_bold", 74, INK), ("backed by", "serif", 52, INK), ("TRUST", "sans_black", 96, RED)], fill=(236, 226, 196), outline=(90, 70, 40))
+    d.rounded_rectangle((214, 444, 866, 816), 12, outline=(90, 70, 40), width=3)
     tc(d, 900, "is how money works today", F("serif_bold", 56), CREAM)
     if lt > dur * 0.6: e = back((lt - dur * 0.6) / 0.4); pill(d, 1060 + 20 * (1 - e), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 46)
     return img
@@ -181,20 +196,21 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.32, bpm=104, music_amp=0.06, gap=0.12,
     chords=[[110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8], [82.4, 103.8, 123.5]],
     scenes=[
-        S("A convicted murderer once ran the entire economy of France, and almost destroyed it.", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
-        S("In sixteen ninety four, a Scottish gambler named John Law killed a man in a duel in London, and was sentenced to death.", duel, tr="zoom", sfx=[(1.0, "tick"), (1.4, "tick"), ("END-3.2", "thud")]),
-        S("But he escaped from prison, and fled to mainland Europe.", prison, tr="whip", sfx=[(0.5, "thud"), (1.4, "stamp")]),
-        S("Years later, he turned up in France, which was drowning in debt from decades of war.", france, tr="zoom"),
-        S("Law had a radical idea: replace gold and silver with paper money. France gave him a bank to try it.", idea, tr="whip", sfx=[(0.6, "pop")]),
-        S("Then he took over a trading company with rights to French Louisiana: the Mississippi Company.", louisiana, tr="whip"),
+        S("In seventeen twenty, the man running France's entire economy was a Scottish gambler, who'd once been sentenced to death for murder.", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
+        S("His name was John Law. In sixteen ninety four, he killed a man in a duel in London, and the court sentenced him to death.", duel, tr="zoom", sfx=[(1.0, "tick"), (1.4, "tick"), ("END-3.2", "thud")]),
+        S("Somehow, he escaped from prison, and slipped away to mainland Europe.", prison, tr="whip", sfx=[(0.5, "thud"), (1.4, "stamp")]),
+        S("For years he lived as a gambler, while studying money and banking. Then he found the perfect place to test his ideas.", gambler, tr="whip", sfx=[(0.5, "coin"), (1.2, "coin")]),
+        S("After decades of war, France was drowning in debt.", france, tr="zoom"),
+        S("And Law had a bold solution: replace gold and silver with paper money.", idea, tr="whip", sfx=[(0.6, "pop")]),
+        S("France gave him a bank to try it. Then he took control of a trading company with rights to French Louisiana: the Mississippi Company.", louisiana, tr="whip"),
         S("Law sold Louisiana as a land of untold riches, and Paris went wild for the shares.", frenzy, tr="whip", sfx=[(0.4 + 0.3 * i, "coin") for i in range(6)]),
-        S("In just one year, the share price shot up from about five hundred livres to around ten thousand.", chart_up, tr="whip", sfx=[("END-1.2", "ding")]),
+        S("In a single year, the share price shot up from about five hundred livres to around ten thousand.", chart_up, tr="whip", sfx=[("END-1.2", "ding")]),
         S("So many people got rich so fast that a new word took off: millionaire.", millionaire, tr="whip", sfx=[(0.1 + 0.11 * i, "tick") for i in range(11)]),
-        S("In January seventeen twenty, Law was put in charge of France's entire economy.", controller, tr="zoom", sfx=[(0.4, "ding")]),
-        S("But the boom was built on printing more and more paper money. When investors tried to swap their paper for gold, it all came apart.", chart_down, tr="whip", sfx=[("END-2.4", "boom")], shake=[(3.0, 0.4, 18)]),
-        S("Prices crashed, angry crowds filled the streets, and by the end of seventeen twenty, Law had fled France.", riots, tr="whip"),
+        S("By January seventeen twenty, the gambler from Scotland was in charge of France's entire economy.", controller, tr="zoom", sfx=[(0.4, "ding")]),
+        S("But there was a catch. The boom was fuelled by printing more and more paper money. And when investors tried to swap their paper for gold, the whole thing came apart.", chart_down, tr="whip", sfx=[("END-2.4", "boom")], shake=[(3.6, 0.4, 18)]),
+        S("Prices crashed, angry crowds filled the streets, and by the end of the year, Law had fled France for good.", riots, tr="whip"),
         S("He died nearly broke, in Venice, in seventeen twenty nine.", venice, tr="whip"),
-        S("But here's the twist. Law's big idea, paper money backed by trust instead of gold, is how almost all money works today. Follow for more money history.", twist, tr="flash", sfx=[(-0.9, "riser")]),
+        S("And yet, here's the twist. Law's big idea, paper money backed by trust instead of gold, is exactly how almost all money works today. Follow for more money history.", twist, tr="flash", sfx=[(-0.9, "riser")]),
     ])
 
 if __name__ == "__main__":

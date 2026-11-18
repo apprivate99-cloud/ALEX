@@ -1,6 +1,8 @@
 """Black Tuesday, 1929: the 'permanently high plateau', margin debt, and a 25-year recovery."""
 import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
+import kit
+kit.ERA = "1920s"
 
 # Dow Jones Industrial Average, approximate (x = year)
 DOW = [(1928.0, 200), (1928.5, 210), (1929.0, 300), (1929.67, 381), (1929.82, 230), (1929.87, 199), (1930.29, 294), (1930.95, 165), (1931.95, 78), (1932.52, 41)]
@@ -14,13 +16,11 @@ FISHER_COAT = (60, 60, 70)
 def hook(lt, dur, T):
     img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
     tc(d, 220, "OCTOBER 15, 1929", F("sans_black", 76), INK)
-    d.rounded_rectangle((90, 340, 990, 800), 20, fill=(250, 244, 226), outline=INK, width=5)
-    tc(d, 330, "“", F("serif_bold", 160), RED)
-    for i, ln in enumerate(["Stock prices have reached", "what looks like a", "permanently high", "plateau."]):
-        e = eio((lt - 0.3 - i * 0.3) / 0.4); tc(d, 470 + i * 72, ln, F("serif_bold" if i >= 2 else "serif", 56), INK + (int(255 * e),))
-    tc(d, 760, "— Irving Fisher, economist", F("serif", 34), (110, 80, 50))
-    merchant(d, 540, 1300, 0.85, T, "smug", coat=FISHER_COAT, hat=False, beard=False)
-    hx, hy = 540, 1300 - 410 * 0.85 + math.sin(T * 5 + 540) * 4 * 0.85
+    words = ["Stock prices have reached", "what looks like a", "permanently high", "plateau."]
+    lines = [("“", "serif_bold", 130, RED)] + [(ln, "serif_bold" if i >= 2 else "serif", 64, INK + (int(255 * eio((lt - 0.3 - i * 0.45) / 0.4)),)) for i, ln in enumerate(words)]
+    card(d, (80, 330, 1000, 900), lines + [("— Irving Fisher, economist", "serif", 38, (110, 80, 50, int(255 * eio((lt - 2.2) / 0.4))))])
+    merchant(d, 540, 1360, 0.8, T, "smug", coat=FISHER_COAT, hat=False, beard=False)
+    hx, hy = 540, 1360 - 410 * 0.8 + math.sin(T * 5 + 540) * 4 * 0.8
     d.ellipse((hx - 46, hy - 26, hx - 4, hy + 8), outline=INK, width=5); d.ellipse((hx + 4, hy - 26, hx + 46, hy + 8), outline=INK, width=5)
     return img
 
@@ -140,16 +140,16 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.32, bpm=112, music_amp=0.06, gap=0.12,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
-        S("On October fifteenth, nineteen twenty nine, a famous economist said stock prices had reached what looks like a permanently high plateau.", hook),
-        S("Two weeks later, the stock market crashed.", two_weeks, tr="flash", sfx=[(0.5, "pop"), (0.9, "boom")], shake=[(0.92, 0.4, 20)], drop=[(0.85, 2.0)]),
-        S("In the roaring twenties, stock prices soared, and ordinary people rushed to get rich.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
-        S("Many bought on margin, paying a small part of the price, and borrowing the rest.", margin, tr="whip", sfx=[(0.9, "riser")]),
-        S("On September third, nineteen twenty nine, the Dow hit a record of three hundred and eighty one.", peak, tr="whip", sfx=[("END-0.9", "ding")]),
-        S("Then, in late October, the selling began. On Black Thursday, prices plunged so fast that the ticker tape couldn't keep up.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
-        S("Then came Black Tuesday, October twenty ninth. A record sixteen million shares were traded in a single day.", tuesday, tr="flash", sfx=[(0.3, "boom")], shake=[(0.32, 0.4, 18)]),
-        S("People who had bought with borrowed money were wiped out, as their lenders demanded to be repaid.", margin_call, tr="whip", sfx=[("END-1.6", "stamp")]),
-        S("And the fall kept going. By July nineteen thirty two, the Dow was down to just forty one, almost ninety percent below its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
-        S("It took twenty five years, until nineteen fifty four, for the Dow to get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
+        S("On October fifteenth, nineteen twenty nine, one of America's most famous economists made a bold prediction. Stock prices, he said, had reached what looks like a permanently high plateau.", hook),
+        S("Two weeks later, the market crashed.", two_weeks, tr="flash", sfx=[(0.5, "pop"), (0.9, "boom")], shake=[(0.92, 0.4, 20)], drop=[(0.85, 2.0)]),
+        S("To understand why, rewind to the roaring twenties. The economy was booming, stock prices kept climbing, and ordinary people rushed to get a piece of the action.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
+        S("Many didn't even use their own money. They bought on margin, paying a small part of the price, and borrowing the rest.", margin, tr="whip", sfx=[(1.4, "riser")]),
+        S("On September third, nineteen twenty nine, the Dow hit a record of three hundred and eighty one. It looked like the party would never end.", peak, tr="whip", sfx=[("END-2.2", "ding")]),
+        S("Then, in late October, the selling started. On Black Thursday, prices fell so fast that the ticker tape couldn't keep up.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
+        S("Five days later came Black Tuesday, October twenty ninth. A record sixteen million shares changed hands in a single day.", tuesday, tr="flash", sfx=[(0.3, "boom")], shake=[(0.32, 0.4, 18)]),
+        S("For people who'd bought with borrowed money, it was a disaster. Their lenders demanded to be repaid, and many were wiped out.", margin_call, tr="whip", sfx=[("END-1.6", "stamp")]),
+        S("And the fall didn't stop. By July nineteen thirty two, the Dow had sunk to just forty one, almost ninety percent below its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
+        S("It would take twenty five years, until nineteen fifty four, for the Dow to finally get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
         S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe. Follow for more money history.", lesson, tr="zoom"),
     ])
 

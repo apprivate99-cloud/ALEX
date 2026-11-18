@@ -1,6 +1,8 @@
 """Where did money come from? Barter myth -> clay-tablet credit -> Lydian coins -> Song paper money -> digital."""
 import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
+import kit
+kit.ERA = "ancient"
 
 
 def hook(lt, dur, T):
@@ -20,9 +22,9 @@ def barter(lt, dur, T, phase):
     img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
     pill(d, 230, "THE TEXTBOOK STORY", CREAM, (40, 40, 40), 44)
     tc(d, 340, "barter: swap what you have", F("serif_bold", 54), INK)
-    merchant(d, 150, 1230, 0.7, T, "happy", coat=(90, 60, 40), cap=True, beard=False)
+    merchant(d, 150, 1230, 0.7, T, "happy", coat=(150, 110, 70))
     cow(d, 360, 1230, 0.95, T)
-    merchant(d, 930, 1230, 0.7, T + 1, "happy", coat=(60, 80, 120), cap=True)
+    merchant(d, 930, 1230, 0.7, T + 1, "happy", coat=(110, 80, 120))
     sack(d, 740, 1230, 0.9)
     u = (T * 0.7) % 1
     for y, sgn in ((660, 1), (760, -1)):  # swap arrows
@@ -96,7 +98,7 @@ def iron(lt, dur, T):
     img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
     pill(d, 230, "CHINA · ~1,000 YEARS AGO", INK, GOLD, 44)
     tc(d, 340, "heavy strings of iron coins", F("serif_bold", 56), CREAM)
-    merchant(d, 300, 1240, 0.85, T, "shock", coat=(120, 40, 40), cap=True, arm=(420, 880))
+    merchant(d, 300, 1240, 0.85, T, "shock", coat=(60, 90, 120), era="song", arm=(420, 880))
     iron_string(d, 420, 880, 8, 34, sag=110 + 10 * math.sin(T * 3))
     if lt > dur * 0.55:
         e = back((lt - dur * 0.55) / 0.4)
@@ -150,19 +152,19 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.32, bpm=100, music_amp=0.06, gap=0.12,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [146.8, 174.6, 220], [98, 123.5, 146.8]],
     scenes=[
-        S("The story you were taught about where money came from is probably wrong.", hook, sfx=[(0.3, "pop")]),
-        S("Most textbooks say people used to barter, swapping a cow for sacks of grain, until money made trading easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="zoom"),
-        S("But anthropologists have found almost no evidence of societies that actually ran on barter.", lambda l, d_, T: barter(l, d_, T, 1), tr=None, sfx=[(0.42, "stamp")], shake=[(0.44, 0.25, 14)]),
-        S("Instead, the earliest records point to credit. Over five thousand years ago, in Mesopotamia,", mesopotamia, tr="whip"),
-        S("temples recorded who owed what, on clay tablets.", tablet_scene, tr="whip", sfx=[(0.4, "thud")]),
-        S("Debts were counted in barley, and in silver, weighed out in units called shekels.", shekel, tr="whip", sfx=[("END-2.0", "coin")]),
-        S("Then, about two thousand six hundred years ago, the kingdom of Lydia, in what's now Turkey, made the world's first coins.", lydia, tr="zoom", sfx=[("END-2.4", "ding")]),
-        S("They were lumps of electrum, a natural mix of gold and silver, stamped with a lion's head.", electrum, tr="whip", sfx=[(0.3, "coin")]),
-        S("Around a thousand years ago in China, merchants were sick of hauling heavy strings of iron coins, so they started swapping paper receipts instead.", iron, tr="whip", sfx=[("END-2.6", "pop")]),
-        S("In ten twenty four, the government took over, and issued the world's first official paper money.", paper, tr="zoom", sfx=[(0.3, "riser")]),
-        S("But it printed too much, and over time, the notes lost almost all their value.", collapse, tr="whip", sfx=[("END-1.0", "thud")]),
-        S("Today, most money isn't coins or paper at all. It's just numbers, recorded in bank computers.", digital, tr="whip"),
-        S("So after five thousand years, money has come full circle, back to a record of who owes what. Follow for more money history.", circle, tr="zoom"),
+        S("Ask most people where money came from, and they'll tell you a neat little story. It's probably wrong.", hook, sfx=[(0.3, "pop")]),
+        S("The story goes like this: before money, people bartered, swapping a cow for a few sacks of grain, until someone invented coins to make life easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="zoom"),
+        S("There's just one problem. Anthropologists have found almost no evidence of any society that actually ran on barter.", lambda l, d_, T: barter(l, d_, T, 1), tr=None, sfx=[(0.42, "stamp")], shake=[(0.44, 0.25, 14)]),
+        S("So where did money really begin? The trail leads back over five thousand years, to Mesopotamia,", mesopotamia, tr="whip"),
+        S("where temple scribes pressed records of debts into clay tablets. Before there were coins, there were IOUs.", tablet_scene, tr="whip", sfx=[(0.4, "thud")]),
+        S("Those debts were counted in barley, or in silver, weighed out in units called shekels.", shekel, tr="whip", sfx=[("END-2.0", "coin")]),
+        S("Coins came much later. About two thousand six hundred years ago, the kingdom of Lydia, in what's now Turkey, began stamping the world's first ones.", lydia, tr="zoom", sfx=[("END-2.4", "ding")]),
+        S("They were lumps of electrum, a natural mix of gold and silver, marked with a lion's head.", electrum, tr="whip", sfx=[(0.3, "coin")]),
+        S("Then China changed everything. Around a thousand years ago, merchants were tired of lugging heavy strings of iron coins, so they began trading paper receipts instead.", iron, tr="whip", sfx=[("END-2.6", "pop")]),
+        S("In ten twenty four, the government took over those receipts, and the world's first official paper money was born.", paper, tr="zoom", sfx=[(0.3, "riser")]),
+        S("But it couldn't resist printing more and more of it, and over time, the notes became almost worthless. Sound familiar?", collapse, tr="whip", sfx=[("END-1.6", "thud")]),
+        S("Today, most money isn't coins or paper at all. It's just numbers, stored in bank computers.", digital, tr="whip"),
+        S("Which means that after five thousand years, money has come full circle: a record of who owes what, just like those clay tablets. Follow for more money history.", circle, tr="zoom"),
     ])
 
 if __name__ == "__main__":
