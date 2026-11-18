@@ -38,8 +38,11 @@ def atlantic(lt, dur, T):
     for (x, y), lab in [((lx, ly), "LONDON"), ((sx, sy), "SOUTH AMERICA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 220), W - 220))
     pill(d, 230, "1720 · THE SOUTH SEA COMPANY", INK, GOLD, 40)
-    if lt > dur * 0.55:
-        e = back((lt - dur * 0.55) / 0.4); d.rectangle((0, 1240, W, 1340), fill=(10, 20, 30, int(230 * clamp(e)))); tc(d, 1256, "promised: riches from trade", F("serif_bold", 54), GOLD + (int(255 * clamp(e)),))
+    if lt > dur * 0.15:
+        late = lt > dur * 0.55; e = back((lt - (dur * 0.55 if late else dur * 0.15)) / 0.4)
+        d.rectangle((0, 1240, W, 1340), fill=(120, 16, 28, 235) if late else (10, 20, 30, 230))
+        txt = "SPAIN'S LIMIT: 1 SHIP A YEAR" if late else "promised: riches from trade"
+        tc(d, 1256, txt, fit(d, txt, "sans_black" if late else "serif_bold", 54, W - 100), (CREAM if late else GOLD) + (int(255 * clamp(e)),))
     return img
 
 def hype(lt, dur, T):
@@ -118,22 +121,70 @@ def end_ss(lt, dur, T):
     if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 580 + 40 * (1 - e2), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 48)
     return img
 
+ERMINE = (250, 248, 240)
+def king(lt, dur, T):
+    img = bg("burgundy").copy(); d = ImageDraw.Draw(img, "RGBA"); rays(d, T, (255, 200, 120, 14))
+    tc(d, 220, "SOUTH SEA COMPANY", fit(d, "SOUTH SEA COMPANY", "serif_bold", 90, W - 120), GOLD)
+    tc(d, 330, "London, 1720", F("serif", 52), CREAM)
+    x, y, s = 540, 1250, 1.1
+    merchant(d, x, y, s, T, "smug", coat=(150, 20, 34), hat=False, beard=False)
+    hy = y + math.sin(T * 5 + x) * 4 * s - 410 * s
+    d.polygon([(x - 64 * s, hy - 50 * s), (x - 70 * s, hy - 130 * s), (x - 32 * s, hy - 90 * s), (x, hy - 150 * s), (x + 32 * s, hy - 90 * s), (x + 70 * s, hy - 130 * s), (x + 64 * s, hy - 50 * s)], fill=GOLD, outline=(150, 104, 30))
+    for cx in (x - 70 * s, x, x + 70 * s): d.ellipse((cx - 12, hy - 150 * s - 4 if cx == x else hy - 130 * s - 4, cx + 12, (hy - 150 * s if cx == x else hy - 130 * s) + 20), fill=RED)
+    if lt > dur * 0.35:
+        e = back((lt - dur * 0.35) / 0.4); pill(d, 430 + 30 * (1 - e), "GOVERNOR: KING GEORGE I", INK, GOLD, 52)
+    return img
+
+def bubble_cos(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 220, "COPYCAT 'BUBBLE' COMPANIES", fit(d, "COPYCAT 'BUBBLE' COMPANIES", "sans_black", 66, W - 120), INK)
+    n = int(16 * eio(lt / (dur * 0.5)))
+    for i in range(n):
+        x = 180 + (i % 4) * 240; y = 340 + (i // 4) * 120
+        d.rounded_rectangle((x - 105, y, x + 105, y + 96), 12, fill=(246, 236, 210), outline=(110, 80, 50), width=5)
+        tc(d, y + 10, "& CO.", F("serif_bold", 40), INK, x=x); tc(d, y + 56, f"No. {i * 12 + 1}", F("serif", 30), (110, 80, 50), x=x)
+    cnt = int(200 * eio(lt / (dur * 0.5)))
+    tc(d, 830, f"~{cnt} sprang up", F("sans_black", 80), RED)
+    if lt > dur * 0.6:
+        slam(img, stamp_img("BANNED", RED, 100, -6), lt, dur * 0.6, 540, 1060)
+        d = ImageDraw.Draw(img, "RGBA"); e = eio((lt - dur * 0.6) / 0.4)
+        pill(d, 1240, "THE BUBBLE ACT · JUNE 1720", CREAM, (150, 20, 34, int(255 * e)), 40)
+    return img
+
+def hutcheson(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 220, "ONE MAN SAW IT COMING", fit(d, "ONE MAN SAW IT COMING", "sans_black", 74, W - 120), INK)
+    tc(d, 320, "Archibald Hutcheson, politician", F("serif_bold", 50), RED)
+    merchant(d, 270, 1250, 0.95, T, "smug", coat=(30, 60, 50), arm=(470, 900))
+    pg = Image.new("RGBA", (420, 540), (0, 0, 0, 0)); pd = ImageDraw.Draw(pg)
+    pd.rectangle((0, 0, 419, 539), fill=(250, 242, 220), outline=INK, width=6); pd.rectangle((16, 16, 403, 523), outline=INK, width=2)
+    for i, (txt, sz) in enumerate([("A WARNING", 56), ("on South-Sea", 36), ("Stock", 36), ("1720", 34)]):
+        f = fit(pd, txt, "serif_bold", sz, 360); w = pd.textlength(txt, font=f); pd.text(((420 - w) / 2, [50, 140, 190, 460][i]), txt, font=f, fill=INK if i != 0 else RED)
+    for k in range(6): pd.line([(60, 270 + k * 28), (360, 270 + k * 28)], fill=(160, 140, 120), width=3)
+    e = eio(lt / 0.5); pg = pg.rotate(5 * (1 - e) + 3, expand=True, resample=Image.BICUBIC)
+    img.paste(pg, (int(560 + 200 * (1 - e)), 520), pg)
+    return img
+
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.32, bpm=108, music_amp=0.06, gap=0.12,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8]],
     scenes=[
         S("Isaac Newton, one of the smartest people who ever lived, lost a fortune on a single stock.", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
-        S("In seventeen twenty, everyone in London wanted shares in the South Sea Company, which promised huge riches from trade with South America.", atlantic, tr="zoom"),
-        S("Its real profits were tiny, but the hype around it was enormous.", hype, tr="whip", sfx=[("END-1.8", "riser")]),
+        S("In seventeen twenty, everyone in London wanted shares in the South Sea Company. Even King George the First was its governor.", king, tr="zoom", sfx=[("END-2.2", "ding")]),
+        S("It promised huge riches from trade with South America. But Spain allowed it just one trading ship a year.", atlantic, tr="whip", sfx=[("END-2.0", "thud")]),
+        S("Real profits were tiny, but the hype was enormous, and insiders even bribed politicians to keep the price climbing.", hype, tr="whip", sfx=[("END-1.8", "riser")]),
+        S("Around two hundred copycat bubble companies sprang up, so the South Sea Company pushed through a law, the Bubble Act, to shut its rivals down.",
+          bubble_cos, tr="whip", sfx=[(0.3 + 0.12 * i, "pop") for i in range(0, 20, 2)] + [("END-1.0", "stamp")]),
         S("As the shares took off, Newton got in early. He sold in April, and walked away with a healthy profit.",
           lambda l, d_, T: chart_ss(l, d_, T, 0, 3, [SOLD]), tr="whip", sfx=[("END-1.5", "coin"), ("END-1.4", "ding")]),
         S("But the price kept climbing. By the summer, shares had hit around a thousand pounds, and his friends were getting rich.",
           lambda l, d_, T: chart_ss(l, d_, T, 3, 5.7, [SOLD]), tr=None),
         S("Newton couldn't bear to watch from the sidelines.", fomo, tr="whip"),
         S("So he jumped back in, just as the price was near its peak.", lambda l, d_, T: chart_ss(l, d_, T, 5.0, 5.4, [SOLD, BUY]), tr="whip", sfx=[(0.6, "thud")]),
+        S("Not everyone was fooled. A politician named Archibald Hutcheson published pamphlets warning that the share price made no sense.", hutcheson, tr="whip"),
         S("Then the bubble burst. By December, the shares had fallen right back to where they started the year.",
-          lambda l, d_, T: chart_ss(l, d_, T, 5.4, 11, [SOLD, BUY], crash=True), tr=None, sfx=[(1.2, "boom")], shake=[(1.2, 0.5, 22)], drop=[(1.1, 2.6)]),
+          lambda l, d_, T: chart_ss(l, d_, T, 5.4, 11, [SOLD, BUY], crash=True), tr="whip", sfx=[(1.2, "boom")], shake=[(1.2, 0.5, 22)], drop=[(1.1, 2.6)]),
         S("Newton reportedly lost around twenty thousand pounds, which would be millions in today's money.", loss, tr="whip"),
         S("He's often quoted as saying: I can calculate the motions of the heavenly bodies, but not the madness of people.", quote, tr="whip"),
         S("The funny thing is, there's no solid evidence that he ever actually said it.", lambda l, d_, T: quote(l, d_, T, 1), tr=None, sfx=[(0.5, "stamp")], shake=[(0.52, 0.25, 14)]),
