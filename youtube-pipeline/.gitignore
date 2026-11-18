@@ -1,5 +1,5 @@
-voices/
-data/
+/voices
+/data
 src/__pycache__/
 src/audit_*/
 src/*.wav
