@@ -1,0 +1,127 @@
+"""Minimal Shorts renderer: script -> TTS -> animated frames + captions -> mp4."""
+import math, os, subprocess, sys, numpy as np, soundfile as sf, sherpa_onnx
+from PIL import Image, ImageDraw, ImageFont, ImageFilter
+
+W, H, FPS, SR = 1080, 1920, 30, 24000
+VOICE_DIR = os.path.join(os.path.dirname(__file__), "..", "voices", "kokoro-en-v0_19")
+INTER = "/usr/share/fonts/opentype/inter/"
+FONTS = {"sans_black": INTER + "InterDisplay-Black.otf", "sans_bold": INTER + "InterDisplay-Bold.otf",
+         "sans_med": INTER + "InterDisplay-Medium.otf",
+         "serif_bold": "/usr/share/fonts/truetype/crosextra/Caladea-Bold.ttf",
+         "serif": "/usr/share/fonts/truetype/crosextra/Caladea-Regular.ttf",
+         "mono": "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"}
+_fc = {}
+def font(name, size):
+    k = (name, size)
+    if k not in _fc: _fc[k] = ImageFont.truetype(FONTS[name], size)
+    return _fc[k]
+
+def ease(x): x = min(max(x, 0), 1); return 1 - (1 - x) ** 3
+def clamp(x): return min(max(x, 0), 1)
+
+_tts = {}
+EXTRA_LEX = os.path.join(os.path.dirname(os.path.abspath(__file__)), "lexicon-extra.txt")
+def check_words(texts, accent="gb"):
+    """Fail before rendering if any word has no pronunciation (the TTS would silently drop it)."""
+    import re
+    known = set()
+    for p in (os.path.join(VOICE_V1, f"lexicon-{accent}-en.txt"), EXTRA_LEX):
+        known |= {l.split(" ", 1)[0] for l in open(p, encoding="utf-8")}
+    missing = sorted({w.lower() for t in texts for w in re.findall(r"[A-Za-z][A-Za-z'\-]*", t)} - known)
+    if missing: raise SystemExit(f"Add pronunciations to lexicon-extra.txt for: {missing}")
+VOICE_V1 = os.path.join(os.path.dirname(__file__), "..", "voices", "kokoro-multi-lang-v1_0")
+def tts(text, sid, speed=1.05, accent="gb"):
+    """Kokoro v1.0 with a proper British or American pronunciation lexicon."""
+    if accent not in _tts:
+        d = VOICE_V1
+        _tts[accent] = sherpa_onnx.OfflineTts(sherpa_onnx.OfflineTtsConfig(model=sherpa_onnx.OfflineTtsModelConfig(
+            kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(model=d + "/model.onnx", voices=d + "/voices.bin",
+                tokens=d + "/tokens.txt", data_dir=d + "/espeak-ng-data", dict_dir=d + "/dict",
+                lexicon=d + f"/lexicon-{accent}-en.txt," + EXTRA_LEX, lang="en-gb" if accent == "gb" else "en-us"), num_threads=4)))
+    a = _tts[accent].generate(text, sid=sid, speed=speed)
+    s = np.array(a.samples, dtype=np.float32)
+    nz = np.where(np.abs(s) > 0.01)[0]  # trim silence
+    return s[max(nz[0] - 600, 0): nz[-1] + 1200] if len(nz) else s
+
+def text_center(d, y, txt, f, fill, stroke=0, sfill=None):
+    w = d.textlength(txt, font=f)
+    d.text(((W - w) / 2, y), txt, font=f, fill=fill, stroke_width=stroke, stroke_fill=sfill)
+
+def music_bed(dur, chords, base_amp=0.05):
+    t = np.arange(int(dur * SR)) / SR
+    out = np.zeros_like(t)
+    seg = dur / len(chords) if chords else dur
+    for i, ch in enumerate(chords):
+        m = (t >= i * seg) & (t < (i + 1) * seg + 1.0)
+        lt = t[m] - i * seg
+        env = np.minimum(lt / 1.2, 1) * np.clip((seg + 1.0 - lt) / 1.0, 0, 1)
+        for f in ch:
+            out[m] += env * (np.sin(2 * np.pi * f * t[m]) + 0.3 * np.sin(4 * np.pi * f * t[m] + 0.5)) / len(ch)
+    fade = np.minimum(np.minimum(t / 1.5, 1), np.clip((dur - t) / 2.0, 0, 1))
+    return (out * fade * base_amp).astype(np.float32)
+
+def render(spec, out_path):
+    theme = spec["theme"]
+    # 1) voice per scene
+    gap = 0.28
+    clips, timeline, t0 = [], [], 0.4
+    for sc in spec["scenes"]:
+        a = tts(sc["say"], spec["voice"], spec.get("speed", 1.05))
+        dur = len(a) / SR
+        timeline.append((t0, dur, sc)); clips.append((t0, a)); t0 += dur + gap
+    total = t0 + 0.6
+    voice = np.zeros(int(total * SR) + SR, dtype=np.float32)
+    for st, a in clips: voice[int(st * SR): int(st * SR) + len(a)] += a
+    voice = voice / (np.abs(voice).max() + 1e-6) * 0.9
+    mix = voice + music_bed(len(voice) / SR, spec["chords"], spec.get("music_amp", 0.05))
+    wav = out_path + ".wav"; sf.write(wav, np.clip(mix, -1, 1), SR)
+
+    # 2) captions: chunks of <=3 words timed by character weight
+    caps = []
+    for st, dur, sc in timeline:
+        words = sc["say"].split(); w8 = [len(w) + 2 for w in words]; tot = sum(w8); acc = 0
+        wt = []
+        for w, k in zip(words, w8): wt.append((st + dur * acc / tot, w)); acc += k
+        for i in range(0, len(wt), 3):
+            chunk = wt[i:i + 3]
+            end = wt[i + 3][0] if i + 3 < len(wt) else st + dur + gap
+            caps.append((chunk[0][0], end, chunk))
+
+    bg = theme["background"]()
+    nframes = int(total * FPS)
+    ff = subprocess.Popen(["ffmpeg", "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
+        "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "20", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "160k", "-shortest", "-movflags", "+faststart", out_path], stdin=subprocess.PIPE)
+    for fi in range(nframes):
+        t = fi / FPS
+        frame = theme["bg_frame"](bg, t)
+        cur = [x for x in timeline if x[0] - 0.15 <= t] or timeline[:1]
+        st, dur, sc = cur[-1]
+        lt = t - st
+        layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        d = ImageDraw.Draw(layer)
+        sc["visual"](d, layer, lt, dur, theme)
+        alpha = clamp((lt + 0.15) / 0.25)
+        if alpha < 1:
+            a = layer.getchannel("A").point(lambda v: int(v * alpha)); layer.putalpha(a)
+        frame.alpha_composite(layer)
+        d = ImageDraw.Draw(frame)
+        theme["chrome"](d, t, total)
+        for cs, ce, chunk in caps:
+            if cs <= t < ce:
+                parts = [w.upper() for _, w in chunk]; sp = 20
+                for size in (78, 70, 62, 56, 50):
+                    f = font("sans_black", size); widths = [d.textlength(p, font=f) for p in parts]
+                    if sum(widths) + sp * (len(parts) - 1) < W - 120: break
+                x = (W - sum(widths) - sp * (len(parts) - 1)) / 2
+                pop = 1 - ease((t - cs) / 0.12)
+                y = 1390 + 10 * pop
+                for (wt_, _), p, w in zip(chunk, parts, widths):
+                    col = theme["cap_hi"] if wt_ <= t else theme["cap"]
+                    d.text((x, y), p, font=f, fill=col, stroke_width=8, stroke_fill=theme["cap_stroke"])
+                    x += w + sp
+                break
+        ff.stdin.write(frame.convert("RGB").tobytes())
+        if fi % 150 == 0: print(f"  frame {fi}/{nframes}", flush=True)
+    ff.stdin.close(); ff.wait(); os.remove(wav)
+    print("wrote", out_path, f"{total:.1f}s")

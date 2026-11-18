@@ -1,0 +1,8 @@
+voices/
+data/
+src/__pycache__/
+src/audit_*/
+src/*.wav
+src/*.log
+src/*.png
+src/*.mp4
