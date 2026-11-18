@@ -59,7 +59,12 @@ def music(dur, bpm, chords, amp, drops=()):
     return (out * env * fade * amp).astype(np.float32)
 
 # ---------- captions show digits, the voice says words ----------
-CAP_MAP = [("a hundred and thirty thousand euros", "€130,000"), ("over two million dollars", "over $2 million"),
+CAP_MAP = [("two thousand six hundred years", "2,600 years"), ("Around two hundred", "Around 200"), ("three hundred and eighty one", "381"), ("seventeen twenty nine", "1729"),
+    ("sixteen ninety four", "1694"), ("nineteen twenty nine", "1929"), ("nineteen thirty two", "1932"), ("nineteen fifty four", "1954"),
+    ("October twenty ninth", "October 29"), ("October fifteenth", "October 15"), ("September third", "September 3"),
+    ("almost ninety percent", "almost 90%"), ("five hundred livres", "500 livres"), ("around ten thousand", "around 10,000"),
+    ("five thousand years", "5,000 years"), ("a thousand years", "1,000 years"), ("twenty five years", "25 years"),
+    ("sixteen million", "16 million"), ("ten twenty four", "1024"), ("forty one", "41"), ("a hundred and thirty thousand euros", "€130,000"), ("over two million dollars", "over $2 million"),
     ("ten thousand guilders", "10,000 guilders"), ("three hundred guilders", "300 guilders"), ("thirty seven people", "37 people"),
     ("more than thirty years", "more than 30 years"), ("sixteen thirty seven", "1637"), ("sixteen thirty six", "1636"),
     ("nineteen fourteen", "1914"), ("nineteen twenty three", "1923"), ("seventeen twenty", "1720"),
