@@ -441,11 +441,11 @@ def archive(lt, dur, T):
     tc(d, 230, "BUYERS WHO PAID", F("sans_black", 68), INK); tc(d, 315, "over ƒ300 for a bulb", F("serif_bold", 60), RED)
     n = min(37, int(37 * eio((lt - 0.4) / (dur - 1.2)))) if lt > 0.4 else 0
     for i in range(n):
-        row = i // 8; in_row = min(8, n - row * 8); x = (W - (in_row - 1) * 116) / 2 + (i % 8) * 116; y = 470 + row * 150
+        row = i // 8; in_row = min(8, n - row * 8); x = (W - (in_row - 1) * 116) / 2 + (i % 8) * 116; y = 460 + row * 142
         d.ellipse((x - 22, y - 22, x + 22, y + 22), fill=INK); d.rounded_rectangle((x - 34, y + 28, x + 34, y + 100), 22, fill=INK)
         d.rectangle((x - 30, y - 40, x + 30, y - 30), fill=INK); d.rectangle((x - 18, y - 70, x + 18, y - 36), fill=INK)
-    tc(d, 1170, f"{n}", F("sans_black", 120), RED)
-    tc(d, 1320, "Source: Anne Goldgar, Tulipmania (2007)", F("serif", 36), INK)
+    tc(d, 1196, f"{n}", F("sans_black", 100), RED)
+    tc(d, 1324, "Source: Anne Goldgar, Tulipmania (2007)", F("serif", 34), INK)
     return img
 
 def pamphlet(lt, dur, T):
