@@ -135,3 +135,47 @@ def render(spec, out_path):
         if fi % 150 == 0: print(f"  frame {fi}/{nframes}", flush=True)
     ff.stdin.close(); ff.wait(); os.remove(wav)
     print("wrote", out_path, f"{total:.1f}s")
+
+
+def split_sentences(text):
+    import re
+    return [p.strip() for p in re.split(r"(?<=[.?!])\s+", text.strip()) if p.strip()]
+
+
+def tts_scene(text, sid, speed=1.08, accent="gb", breath=0.14):
+    """Read a whole scene in ONE take so intonation flows across sentences like a real narrator.
+    Returns (audio, spans) where spans[i] = (start_s, end_s) of sentence i, found from the
+    model's own pauses. A short extra breath is added only at those sentence breaks."""
+    tts("warm up.", sid, speed, accent)  # make sure the engine is loaded
+    sents = split_sentences(text)
+    raw = np.array(_tts[accent].generate(text, sid=sid, speed=speed).samples, np.float32)
+    env = np.convolve(np.abs(raw), np.ones(240) / 240, "same")
+    loud = np.where(env > 0.01)[0]
+    if not len(loud): return raw, [(0, len(raw) / SR)]
+    a0, a1 = max(loud[0] - 600, 0), min(loud[-1] + int(0.12 * SR), len(raw))
+    s = raw[a0:a1].copy(); env = env[a0:a1]
+    fade = int(0.03 * SR); s[-fade:] *= np.linspace(1, 0, fade)
+    # quiet gaps the model chose (candidate sentence breaks)
+    quiet = env < 0.004; gaps, st = [], None
+    for i, q in enumerate(quiet):
+        if q and st is None: st = i
+        if (not q or i == len(quiet) - 1) and st is not None:
+            if (i - st) > 0.07 * SR and st > 0 and i < len(quiet) - 1: gaps.append((st, i))
+            st = None
+    # expected break positions from character counts, then snap each to the nearest real gap
+    lens = [len(x) for x in sents]; tot = sum(lens); cuts = []; last = 0
+    for k in range(len(sents) - 1):
+        est = len(s) * sum(lens[:k + 1]) / tot
+        cands = [g for g in gaps if g[0] > last]
+        if not cands: break
+        g = min(cands, key=lambda g: abs((g[0] + g[1]) / 2 - est) - 0.4 * (g[1] - g[0]))
+        cuts.append(g); last = g[1]
+    # rebuild audio with a small breath inserted in the middle of each sentence break
+    out, spans, pos, t = [], [], 0, 0.0
+    for (g0, g1) in cuts:
+        mid = (g0 + g1) // 2
+        out.append(s[pos:mid]); spans.append((t, (t * SR + (g0 - pos)) / SR)); t += (mid - pos) / SR
+        out.append(np.zeros(int(breath * SR), np.float32)); t += breath; pos = mid
+    out.append(s[pos:]); spans.append((t, t + (len(s) - pos) / SR))
+    while len(spans) < len(sents): spans.append(spans[-1])
+    return np.concatenate(out), spans

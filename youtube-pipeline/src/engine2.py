@@ -1,7 +1,7 @@
 """Shorts renderer v2: full-frame scenes, transitions, shake, SFX, word-highlight captions."""
 import math, os, subprocess, numpy as np, soundfile as sf
 from PIL import Image, ImageDraw, ImageFilter
-from engine import tts, check_words, font, ease, clamp, W, H, FPS, SR
+from engine import tts, tts_scene, split_sentences, check_words, font, ease, clamp, W, H, FPS, SR
 
 def eio(x): x = clamp(x); return x * x * (3 - 2 * x)
 def back(x, k=1.70158): x = clamp(x) - 1; return 1 + x * x * ((k + 1) * x + k)
@@ -81,7 +81,11 @@ def render(spec, out_path):
     gapd = spec.get("gap", 0.22)
     timeline, t0 = [], 0.25
     for sc in spec["scenes"]:
-        a = tts(sc["say"], spec["voice"], spec.get("speed", 1.0)); dur = len(a) / SR
+        if spec.get("one_take"):
+            a, spans = tts_scene(sc["say"], spec["voice"], spec.get("speed", 1.08))
+        else:
+            a = tts(sc["say"], spec["voice"], spec.get("speed", 1.0)); spans = None
+        dur = len(a) / SR; sc["_spans"] = spans
         timeline.append(dict(st=t0, dur=dur, sc=sc, audio=a)); t0 += dur + sc.get("gap", gapd)
     total = t0 + spec.get("tail", 0.8)
     n = int(total * SR) + SR
@@ -103,6 +107,36 @@ def render(spec, out_path):
 
     caps = []
     for x in timeline:
+        spans = x["sc"].get("_spans")
+        if spans:   # one caption group never crosses a full stop; timed to the real sentence audio
+            sents = split_sentences(x["sc"]["say"])
+            for si, (sent, (s0, s1)) in enumerate(zip(sents, spans)):
+                words = cap_text(sent).split()
+                if not words: continue
+                # phrase groups: break at commas first, then into balanced chunks of up to 3 words
+                clauses, cur = [], []
+                for wi, w in enumerate(words):
+                    cur.append(w)
+                    nxt_w = words[wi + 1] if wi + 1 < len(words) else ""
+                    is_date = w[:-1].isdigit() and nxt_w[:1].isdigit()   # keep "3, 1929" together
+                    if w.endswith((",", ";", ":")) and not is_date: clauses.append(cur); cur = []
+                if cur: clauses.append(cur)
+                merged = []
+                for c in clauses:
+                    if merged and (len(c) == 1 or len(merged[-1]) == 1) and len(merged[-1]) + len(c) <= 4: merged[-1] = merged[-1] + c
+                    else: merged.append(c)
+                sizes = []
+                for c in merged:
+                    if len(c) <= 4 and sum(len(w) for w in c) <= 19: sizes.append(len(c)); continue   # short phrase: keep whole
+                    n = max(1, -(-len(c) // 3)); sizes += [len(c) // n + (1 if k < len(c) % n else 0) for k in range(n)]
+                w8 = [len(w) + 3 for w in words]; tot = sum(w8); acc = 0; wt = []
+                for w, k in zip(words, w8): wt.append((x["st"] + s0 + (s1 - s0) * acc / tot, w)); acc += k
+                nxt = x["st"] + spans[si + 1][0] if si + 1 < len(spans) else x["st"] + x["dur"] + 0.15
+                i = 0
+                for sz in sizes:
+                    ch = wt[i:i + sz]; end = wt[i + sz][0] if i + sz < len(wt) else nxt
+                    caps.append((ch[0][0], end, ch)); i += sz
+            continue
         words = cap_text(x["sc"]["say"]).split(); w8 = [len(w) + 3 for w in words]; tot = sum(w8); acc = 0; wt = []
         for w, k in zip(words, w8): wt.append((x["st"] + x["dur"] * acc / tot, w)); acc += k
         step = 3
