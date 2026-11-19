@@ -104,6 +104,27 @@ def cap_word_times(x, si, cap_words):
     for i in range(1, len(out)): out[i] = max(out[i], out[i - 1])
     return out
 
+
+def music_track(path, n, voice, amp, drops=()):
+    """Load a real music file (mp3/wav/...), loop it to length, fade in/out, and duck it under the voice."""
+    raw = subprocess.run(["ffmpeg", "-loglevel", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"],
+                         capture_output=True, check=True).stdout
+    m = np.frombuffer(raw, np.float32).copy()
+    m /= (np.abs(m).max() + 1e-6)
+    if len(m) < n: m = np.tile(m, n // len(m) + 1)
+    m = m[:n]
+    t = np.arange(n) / SR; dur = n / SR
+    m *= np.minimum(np.minimum(t / 1.5, 1), np.clip((dur - t) / 2.5, 0, 1))
+    # ducking: music drops to ~35% while the narrator is speaking, with smooth attack/release
+    env = np.convolve(np.abs(voice[:n]), np.ones(2400) / 2400, "same")
+    speaking = (env > 0.01).astype(np.float32)
+    k = np.exp(-np.arange(int(0.25 * SR)) / (0.08 * SR)); k /= k.sum()
+    speaking = np.clip(np.convolve(speaking, k, "same") * 1.6, 0, 1)
+    gain = 1.0 - 0.65 * speaking
+    for a_, b_ in drops:  # silence for impact moments
+        gain *= 1 - np.clip(np.minimum((t - a_) / 0.05, (b_ - t) / 0.4), 0, 1)
+    return (m * gain * amp).astype(np.float32)
+
 # ---------- render ----------
 def render(spec, out_path):
     check_words([sc["say"] for sc in spec["scenes"]])
@@ -129,7 +150,10 @@ def render(spec, out_path):
             if isinstance(off, str): off = x["dur"] - float(off[4:])  # "END-1.0" = 1s before scene end
             s = max(int((x["st"] + off) * SR), 0); clip = sfx(name).astype(np.float32); fx[s: s + len(clip)] += clip[: n - s]
         for a, b in x["sc"].get("drop", []): drops.append((x["st"] + a, x["st"] + b))
-    mus = music(n / SR, spec.get("bpm", 100), spec["chords"], spec.get("music_amp", 0.05), drops)
+    if spec.get("music_file"):
+        mus = music_track(spec["music_file"], n, voice, spec.get("music_amp", 0.16), drops)
+    else:
+        mus = music(n / SR, spec.get("bpm", 100), spec["chords"], spec.get("music_amp", 0.05), drops)
     mus = np.pad(mus, (0, max(0, n - len(mus))))[:n]  # guard float rounding
     mix = voice + fx * 0.55 + mus
     wav = out_path + ".wav"; sf.write(wav, np.clip(mix, -1, 1), SR)
