@@ -148,28 +148,68 @@ def circle(lt, dur, T):
     phone(d, 790, 760, 0.95, "£12,483.20")
     tc(d, 1070, "3500 BC", F("sans_black", 52), CREAM, x=290); tc(d, 1070, "TODAY", F("sans_black", 52), CREAM, x=790)
     tc(d, 680, "=", F("sans_black", 140), CREAM, x=540)
-    if lt > dur * 0.55: e = back((lt - dur * 0.55) / 0.4); pill(d, 1190 + 30 * (1 - e), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 46)
+    return img
+
+
+def textbook(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 230, "WHAT WE'RE TAUGHT", F("sans_black", 90), INK)
+    e = back(lt / 0.45); s_ = 0.7 + 0.3 * clamp(e)
+    bx, by, bw, bh = 540, 820, 820 * s_, 560 * s_
+    d.rectangle((bx - bw / 2 + 12, by - bh / 2 + 14, bx + bw / 2 + 12, by + bh / 2 + 14), fill=(0, 0, 0, 60))
+    d.rectangle((bx - bw / 2, by - bh / 2, bx, by + bh / 2), fill=(250, 246, 234), outline=(120, 90, 60), width=5)
+    d.rectangle((bx, by - bh / 2, bx + bw / 2, by + bh / 2), fill=(246, 240, 226), outline=(120, 90, 60), width=5)
+    d.text((bx - bw / 4, by - bh / 2 + 70 * s_), "CHAPTER 1", font=F("sans_bold", int(34 * s_)), fill=(150, 100, 60), anchor="mm")
+    d.text((bx - bw / 4, by - bh / 2 + 140 * s_), "Barter", font=F("serif_bold", int(70 * s_)), fill=INK, anchor="mm")
+    for k in range(6): d.line([(bx - bw / 2 + 50 * s_, by - 30 * s_ + k * 34 * s_), (bx - 50 * s_, by - 30 * s_ + k * 34 * s_)], fill=(170, 160, 140), width=4)
+    cow(d, bx + bw / 4 - 30 * s_, by + 160 * s_, 0.75 * s_, T)
+    return img
+
+
+def timeline(lt, dur, T):
+    img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 260, "COINS CAME MUCH LATER", fit(d, "COINS CAME MUCH LATER", "sans_black", 80, W - 100), CREAM)
+    X0, X1, Y = 120, 960, 760
+    d.line([(X0, Y), (X1, Y)], fill=GOLD, width=10)
+    for x, lab in [(X0, "3500 BC"), (X1 - 220, "630 BC"), (X1, "TODAY")]:
+        d.ellipse((x - 16, Y - 16, x + 16, Y + 16), fill=GOLD); tc(d, Y + 40, lab, F("sans_black", 40), CREAM, x=x)
+    tablet(img, X0 + 40, Y - 190, 0.32, [], T); d = ImageDraw.Draw(img, "RGBA")
+    k = eio(lt / (dur * 0.8)); mx = X0 + (X1 - 220 - X0) * k
+    lion_coin(d, mx, Y - 170 - 12 * abs(math.sin(T * 5)) * (1 - k), 70)
+    if k > 0.98: tc(d, 940, "~3,000 YEARS LATER", F("sans_black", 60), GOLD)
+    return img
+
+
+def china_map(lt, dur, T):
+    img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA"); k = eio(lt / dur)
+    pr = draw_map(img, d, 106, 34, 12 + 6 * k, T, hl=("CHN",), cy=760, bbox=(60, 150, 0, 60))
+    x, y = pr(104, 35); map_face(d, x, y, 1.4, "happy", T)
+    pill(d, 230, "CHINA · ~1,000 YEARS AGO", INK, GOLD, 46)
     return img
 
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=100, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=100, music_amp=0.06, gap=0.06,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [146.8, 174.6, 220], [98, 123.5, 146.8]],
     scenes=[
         S("Did you know the first money wasn't coins at all? It was debt, scratched into clay over five thousand years ago.", hook, sfx=[(0.3, "pop")]),
-        S("That's not the story most of us are taught. The usual version goes like this: before money, people bartered, swapping a cow for a few sacks of grain, until someone invented coins to make life easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="zoom"),
+        S("That's not the story most of us are taught.", textbook, tr="zoom", sfx=[(0.2, "pop")]),
+        S("The usual version goes like this: before money, people bartered, swapping a cow for a few sacks of grain, until someone invented coins to make life easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="whip"),
         S("There's just one problem. Anthropologists have found almost no evidence of any society that actually ran on barter.", lambda l, d_, T: barter(l, d_, T, 1), tr=None, sfx=[(0.42, "stamp")], shake=[(0.44, 0.25, 14)]),
         S("So where did money really begin? The trail leads back to ancient Mesopotamia,", mesopotamia, tr="whip"),
         S("where temple scribes pressed records of debts into clay tablets. Before there were coins, there were IOUs.", tablet_scene, tr="whip", sfx=[(0.4, "thud")]),
         S("Those debts were counted in barley, or in silver, weighed out in units called shekels.", shekel, tr="whip", sfx=[("END-2.0", "coin")]),
-        S("Coins came much later. About two thousand six hundred years ago, the kingdom of Lydia, in what's now Turkey, began stamping the world's first ones.", lydia, tr="zoom", sfx=[("END-2.4", "ding")]),
+        S("Coins came much later.", timeline, tr="whip", sfx=[(0.2, "whoosh")]),
+        S("About two thousand six hundred years ago, the kingdom of Lydia, in what's now Turkey, began stamping the world's first ones.", lydia, tr="zoom", sfx=[("END-2.4", "ding")]),
         S("They were lumps of electrum, a natural mix of gold and silver, marked with a lion's head.", electrum, tr="whip", sfx=[(0.3, "coin")]),
-        S("Then China changed everything. Around a thousand years ago, merchants were tired of lugging heavy strings of iron coins, so they began trading paper receipts instead.", iron, tr="whip", sfx=[("END-2.6", "pop")]),
+        S("Then China changed everything.", china_map, tr="zoom"),
+        S("Around a thousand years ago, merchants were tired of lugging heavy strings of iron coins, so they began trading paper receipts instead.", iron, tr="whip", sfx=[("END-2.6", "pop")]),
         S("In ten twenty four, the government took over those receipts, and the world's first official paper money was born.", paper, tr="zoom", sfx=[(0.3, "riser")]),
         S("But it couldn't resist printing more and more of it, and over time, the notes became almost worthless. Sound familiar?", collapse, tr="whip", sfx=[("END-1.6", "thud")]),
         S("Today, most money isn't coins or paper at all. It's just numbers, stored in bank computers.", digital, tr="whip"),
-        S("Which means that after five thousand years, money has come full circle: a record of who owes what, just like those clay tablets. What will money look like next? Follow for more finance history.", circle, tr="zoom"),
+        S("Which means that after five thousand years, money has come full circle: a record of who owes what, just like those clay tablets.", circle, tr="zoom"),
+        S("What will money look like next? Follow for more finance history.", lambda l, d_, T: cta_card(l, d_, T, "WHAT WILL MONEY", "LOOK LIKE NEXT?", lambda: bg("dark")), tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":

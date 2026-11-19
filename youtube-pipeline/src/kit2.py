@@ -254,3 +254,17 @@ def us_bank(d, x, y, s, closed=False):
     if closed:
         d.rounded_rectangle((x - 120 * s, y - 150 * s, x + 120 * s, y - 80 * s), 8, fill=(250, 250, 246), outline=RED, width=max(int(5 * s), 1))
         tc(d, y - 140 * s, "CLOSED", F("sans_black", int(44 * s)), RED, x=x)
+
+
+def cta_card(lt, dur, T, q1, q2, base, accent=GOLD, icon=None):
+    """End card: a two-line question, a bobbing icon, then the follow banner."""
+    img = base().copy() if callable(base) else base.copy(); d = ImageDraw.Draw(img, "RGBA")
+    e = back(lt / 0.4)
+    tc(d, 340 + 30 * (1 - e), q1, fit(d, q1, "sans_black", 140, W - 100), CREAM + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    tc(d, 510 + 30 * (1 - e), q2, fit(d, q2, "sans_black", 120, W - 100), RED + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    if icon: icon(img, d, 540, 900 + 14 * math.sin(T * 3), T)
+    else: tc(d, 760, "?", F("serif_bold", 300 + int(20 * math.sin(T * 4))), accent)
+    d = ImageDraw.Draw(img, "RGBA")
+    if lt > dur * 0.35:
+        e2 = back((lt - dur * 0.35) / 0.4); pill(d, 1200 + 20 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, accent, 46)
+    return img

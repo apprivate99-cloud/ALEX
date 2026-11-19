@@ -27,10 +27,10 @@ def alkmaar(lt, dur, T):
     slam(img, stamp_img("REPORTEDLY", GOLD, 80, -4), lt, hit, 540, 1270)
     return img
 
-def today(lt, dur, T):
+def today(lt, dur, T, half=None):
     img = radial((236, 246, 240), (190, 214, 200)); d = ImageDraw.Draw(img, "RGBA")
     pill(d, 230, "IN TODAY'S MONEY", (255, 255, 255), (20, 120, 70), 46)
-    half = dur * 0.42
+    half = dur * 0.42 if half is None else half
     e1 = eio((lt - 0.2) / 0.9); tc(d, 360, "ADJUSTED FOR PRICES", F("sans_bold", 44), (60, 80, 70))
     tc(d, 420, f"€{130000 * e1:,.0f}", F("sans_black", 120), (60, 90, 80))
     if lt > half:
@@ -56,23 +56,47 @@ def unpaid(lt, dur, T):
     slam(img, stamp_img("NEVER PAID?", RED, 72, -5), lt, 0.5, 540, 1000)
     return img
 
+def pile_in(lt, dur, T):
+    img = bg("tavern").copy(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "WINTER 1636", CREAM, (0, 0, 0, 170), 46)
+    tc(d, 330, "EVERYONE WANTS IN", F("sans_black", 84), GOLD, 6, INK)
+    coats = [(30, 26, 30), (60, 30, 40), (40, 60, 50), (70, 50, 30), (90, 60, 40), (50, 50, 80)]
+    for i in range(6):
+        st = i * 0.35; u = eio((lt - st) / 1.2)
+        if lt < st: continue
+        x = -120 + (160 + i * 150) * u
+        merchant(d, x, 1180 - 14 * abs(math.sin(T * 7 + i)) * (1 - u), 0.72, T + i, "happy", coat=coats[i], cap=(i % 2 == 1))
+    return img
+
+
+def tulip_icon(img, d, x, y, T):
+    tulip(d, x, y + 260, 1.0, stripes=1, sway=math.sin(T * 2) * 0.2)
+
+
+def _cta(*a, **k):
+    from kit2 import cta_card   # imported lazily: kit2 itself imports this module
+    return cta_card(*a, **k)
+
+
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=104, music_amp=0.06, gap=0.06,
     chords=[[146.8, 174.6, 220], [116.5, 146.8, 174.6], [130.8, 164.8, 196], [110, 138.6, 164.8]],
     scenes=[
         S("Did you know a single tulip was once worth as much as a house? It happened in sixteen thirty seven.", lambda l, d_, T: scale_scene(l, d_, T, 0), sfx=[(0.78, "thud")], shake=[(0.78, 0.25, 14)]),
         S("Then, almost overnight, nobody would buy one.", lambda l, d_, T: scale_scene(l, d_, T, 1), tr=None, sfx=[(0.1, "boom")], shake=[(0.1, 0.35, 18)], drop=[(0.05, 1.2)]),
         S("To understand why, we need to go back to the Dutch Republic, which was booming, with ships trading all across the world.", map_a, tr="zoom"),
         S("Tulips had arrived from the Ottoman Empire, and rare striped varieties became the ultimate status symbol for the rich.", map_b, tr=None, sfx=[(4.0, "ding")]),
-        S("By the winter of sixteen thirty six, merchants and craftsmen were piling in. They traded bulbs that were still in the ground, in taverns, using contracts instead of cash.",
-          lambda l, d_, T: tavern(l, d_, T, 0), tr="whip", sfx=[(1.15 * (i + 1), "coin") for i in range(5)]),
+        S("By the winter of sixteen thirty six, merchants and craftsmen were piling in.", pile_in, tr="whip", sfx=[(0.35 * i, "pop") for i in range(6)]),
+        S("They traded bulbs that were still in the ground, in taverns, using contracts instead of cash.",
+          lambda l, d_, T: tavern(l, d_, T, 0), tr="whip", sfx=[(1.15 * (i + 1), "coin") for i in range(4)]),
         S("The Dutch called it the wind trade, because buyers were really trading in thin air.", lambda l, d_, T: tavern(l, d_, T, 1), tr=None, sfx=[(0.0, "whoosh"), (0.2, "whoosh")]),
         S("At the peak of the craze, the most famous bulb of all, the Semper Augustus, reportedly sold for ten thousand guilders.",
           alkmaar, tr="drop", sfx=[(0.6 + 0.3 * i, "tick") for i in range(12)] + [("END-1.0", "thud")]),
         S("At the time, a skilled craftsman earned about three hundred guilders a year, so that one bulb was worth more than thirty years of wages.",
           lambda l, d_, T: wages(l, d_, T, 1, years=33, price=10000), tr="whip", sfx=[(0.6 + 0.08 * i, "tick") for i in range(33)]),
-        S("In today's money, that's around a hundred and thirty thousand euros if you adjust for prices. But if you measure it in wages, it's like paying over two million dollars for a single flower.", today, tr="zoom", sfx=[(0.3, "coin"), ("END-3.0", "riser")]),
+        S("In today's money, that's around a hundred and thirty thousand euros if you adjust for prices.", lambda l, d_, T: today(l, d_, T, half=1e9), tr="zoom", sfx=[(0.3, "coin")]),
+        S("But if you measure it in wages, it's like paying over two million dollars for a single flower.", lambda l, d_, T: today(l + 2.5, d_ + 2.5, T, half=2.5), tr=None, sfx=[(0.2, "riser")]),
         S("Then, in February sixteen thirty seven, buyers suddenly stopped showing up to the auctions.", lambda l, d_, T: auction(l, d_, T, "FEBRUARY 1637"), tr="whip"),
         S("Panic spread through the taverns, and prices collapsed.", crash, tr="whip", sfx=[(0.8, "boom")], shake=[(0.8, 0.5, 24)], drop=[(0.75, 2.0)]),
         S("In fact, many of those sky-high deals were probably never even paid.", unpaid, tr="whip", sfx=[(0.5, "stamp")], shake=[(0.52, 0.25, 16)]),
@@ -80,7 +104,8 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp
         S("When historian Anne Goldgar searched the Dutch archives, she found only thirty seven people who had paid more than three hundred guilders for a bulb.",
           archive, tr="whip", sfx=[(0.5 + 0.15 * i, "pop") for i in range(0, 37, 3)]),
         S("There was no wave of ruin, and no economic collapse.", pamphlet, tr="whip", sfx=[(0.36, "stamp")], shake=[(0.38, 0.25, 16)]),
-        S("So the world's most famous bubble might itself have been a bit of a bubble. Would you have bought a tulip? Follow for more finance history.", ending, tr="zoom", sfx=[(2.4, "pop")]),
+        S("So the world's most famous bubble might itself have been a bit of a bubble.", ending, tr="zoom", sfx=[(2.4, "pop")]),
+        S("Would you have bought a tulip? Follow for more finance history.", lambda l, d_, T: _cta(l, d_, T, "WOULD YOU HAVE", "BOUGHT A TULIP?", lambda: bg("burgundy"), icon=tulip_icon), tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ import kit
 kit.ERA = "1920s"
 kit.COIN_SYM = "M"
 from tulip_v2 import stamp_img, slam
-from kit2 import map_face, coin_flow, factory
+from kit2 import map_face, coin_flow, factory, cta_card
 STEEL=(60, 64, 72); NOTE=(196, 186, 150); NOTE_D=(110, 96, 70)
 
 def note(d, x, y, s, label="1 MILLION", a=255):
@@ -51,16 +51,18 @@ def stove_hook(lt, dur, T):
     return img
 
 
-def ruhr(lt, dur, T):
-    img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA"); k = eio(lt / dur)
+def ruhr(lt, dur, T, phase=None):
+    img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA")
+    if phase is None: ph = 0 if lt < dur * 0.45 else 1; k = eio(lt / dur); t1 = dur * 0.45
+    else: ph = phase; k = eio(0.5 * clamp(lt / dur) + 0.5 * phase); t1 = 0
     pr = draw_map(img, d, 9 - 3.5 * k, 50.5 - 0.3 * k, 62 + 18 * k, T, hl=("DEU",))
     rx, ry = pr(7.2, 51.45); gx, gy = pr(10.6, 51.0)
-    map_face(d, gx, gy, 1.6, "sad" if lt < dur * 0.45 else "shock", T)
-    if lt < dur * 0.45:
+    map_face(d, gx, gy, 1.6, "sad" if ph == 0 else "shock", T)
+    if ph == 0:
         pill(d, 250, "AFTER WWI: HUGE REPARATIONS", CREAM, (0, 0, 0, 170), 40)
         fx, fy = pr(2.35, 47.5); coin_flow(d, (gx, gy + 60), (fx, fy), T, n=8, arc=-160)
     else:
-        u = eio((lt - dur * 0.45) / 0.8)
+        u = eio((lt - t1) / 0.8)
         for lon, lat, nm in [(2.35, 48.86, "FRANCE"), (4.35, 50.85, "BELGIUM")]:
             sx, sy = pr(lon, lat); tc(d, sy + (30 if nm == "FRANCE" else -80), nm, F("sans_black", 40), CREAM, 6, (10, 20, 30), x=max(sx - (0 if nm == "FRANCE" else 90), 150)); ex, ey = sx + (rx - sx) * u, sy + (ry - sy) * u
             d.line([(sx, sy), (ex, ey)], fill=RED, width=16); ang = math.atan2(ey - sy, ex - sx)
@@ -159,24 +161,58 @@ def end_w(lt, dur, T):
         if not 200 < ny < 1150: note(d, rng.uniform(0, W), ny, 0.7, a=60)
     e = back(lt / 0.4); tc(d, 380 + 30 * (1 - e), "MONEY", F("sans_black", 170), CREAM); tc(d, 560, "IS JUST", F("sans_black", 110), (150, 156, 170))
     tc(d, 690, "TRUST", F("sans_black", 220), GOLD)
-    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 1000 + 40 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 50)
     return img
+
+def paper_vs_note(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "1923", CREAM, (40, 40, 40), 50)
+    tc(d, 330, "WORTH LESS THAN PAPER", fit(d, "WORTH LESS THAN PAPER", "sans_black", 80, W - 100), INK)
+    e = back(lt / 0.4)
+    note(d, 270, 760, 1.8 * clamp(e) + 0.01, "1 MILLION")
+    d.rounded_rectangle((660, 650, 940, 870), 8, fill=(255, 255, 255), outline=(180, 180, 180), width=4)
+    tc(d, 680, "<", F("sans_black", 140), RED, x=555)
+    tc(d, 930, "BANKNOTE", F("sans_black", 46), INK, x=270); tc(d, 930, "BLANK PAPER", F("sans_black", 46), INK, x=800)
+    if lt > dur * 0.5: slam(img, stamp_img("WORTHLESS", RED, 100, -6), lt, dur * 0.5, 540, 1150)
+    return img
+
+
+def payday(lt, dur, T):
+    img = radial((120, 96, 70), (40, 30, 22)); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "PAID TWICE A DAY", CREAM, (150, 20, 34), 48)
+    for i, (lab, ang) in enumerate([("NOON", 0), ("EVENING", 180)]):
+        cx = 330 + i * 420; cy = 470; R = 90
+        d.ellipse((cx - R, cy - R, cx + R, cy + R), fill=CREAM, outline=INK, width=8)
+        d.line([(cx, cy), (cx, cy - 70)], fill=INK, width=8); a = math.radians(ang); d.line([(cx, cy), (cx + 50 * math.sin(a), cy - 50 * math.cos(a))], fill=INK, width=12)
+        tc(d, cy + 110, lab, F("sans_black", 40), CREAM, x=cx)
+    d.rectangle((760, 760, 1060, 1180), fill=(150, 62, 44)); d.rectangle((740, 740, 1080, 790), fill=(110, 40, 30))
+    tc(d, 752, "BAKERY", F("sans_black", 40), CREAM, x=910); d.rectangle((860, 1040, 960, 1180), fill=(60, 34, 24))
+    u = eio(clamp(lt / (dur * 0.9))); x = 60 + 560 * u
+    merchant(d, x, 1260, 0.75, T * 2.5, "shock", coat=(70, 70, 90), cap=True, beard=False, arm=(x + 110, 1110))
+    d.polygon([(x + 110, 1110), (x + 330, 1090), (x + 300, 1190), (x + 140, 1190)], fill=(120, 80, 50)); d.ellipse((x + 270, 1180, x + 330, 1240), fill=(40, 30, 20))
+    for i in range(5): note(d, x + 220 + (i % 2) * 20, 1080 - i * 28, 0.6)
+    return img
+
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=96, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=96, music_amp=0.06, gap=0.06,
     chords=[[110, 130.8, 164.8], [98, 123.5, 146.8], [87.3, 110, 130.8], [82.4, 103.8, 123.5]],
     scenes=[
-        S("Did you know some Germans once burned banknotes in their stoves? In nineteen twenty three, their money was worth less than the paper it was printed on.", stove_hook, sfx=[(0.4, "whoosh")]),
+        S("Did you know some Germans once burned banknotes in their stoves?", stove_hook, sfx=[(0.4, "whoosh")]),
+        S("In nineteen twenty three, their money was worth less than the paper it was printed on.", paper_vs_note, tr="whip", sfx=[("END-2.6", "stamp")]),
         S("Just nine years earlier, in nineteen fourteen, one US dollar was worth four point two German marks.", lambda l, d_, T: hook(l, d_, T, 0), tr="zoom", sfx=[(0.3, "coin")]),
         S("By late nineteen twenty three, that same dollar was worth four point two trillion.", lambda l, d_, T: hook(l, d_, T, 1), tr="flash", sfx=[(0.3 + 0.12 * i, "tick") for i in range(12)] + [("END-0.2", "boom")], shake=[(2.0, 0.4, 16)]),
-        S("So how did this happen? After World War One, Germany owed enormous reparations. Then, in nineteen twenty three, France and Belgium occupied the Ruhr, Germany's industrial heartland.", ruhr, tr="zoom", sfx=[("END-3.2", "thud")]),
+        S("So how did this happen? After World War One, Germany owed enormous reparations.", lambda l, d_, T: ruhr(l, d_, T, 0), tr="zoom"),
+        S("Then, in nineteen twenty three, France and Belgium occupied the Ruhr, Germany's industrial heartland.", lambda l, d_, T: ruhr(l, d_, T, 1), tr=None, sfx=[(0.6, "thud")]),
         S("The workers there went on strike, and the government kept paying them by printing more and more money.", press, tr="whip", sfx=[(0.5 + 0.25 * i, "tick") for i in range(16)]),
-        S("Soon, prices were rising by the hour. Some workers were paid twice a day, and they rushed to the shops before their wages lost value.", prices, tr="whip", sfx=[(0.4 + 0.3 * i, "tick") for i in range(20)]),
+        S("Soon, prices were rising by the hour.", prices, tr="whip", sfx=[(0.3 + 0.3 * i, "tick") for i in range(8)]),
+        S("Some workers were paid twice a day, and they rushed to the shops before their wages lost value.", payday, tr="whip", sfx=[(0.3, "coin"), (0.6, "coin")]),
         S("Banknotes became so worthless that children played with bundles of them as toys, and families fed them into the fire.", worthless, tr="whip"),
         S("By late nineteen twenty three, the mark was effectively worthless, and a lifetime of savings had been wiped out.", chart_w, tr="whip", sfx=[("END-1.8", "boom")], shake=[(3.5, 0.4, 18)]),
-        S("Finally, in November nineteen twenty three, Germany launched a new currency called the Rentenmark, swapping one new mark for one trillion old ones. Remarkably, it worked.", renten, tr="whip", sfx=[(1.0, "pop"), ("END-1.6", "stamp")]),
-        S("The lesson? Money only works as long as people trust it. Could it happen to your money? Follow for more finance history.", end_w, tr="zoom"),
+        S("Finally, in November nineteen twenty three, Germany launched a new currency called the Rentenmark, swapping one new mark for one trillion old ones.", lambda l, d_, T: renten(l, 100, T), tr="whip", sfx=[(1.0, "pop")]),
+        S("Remarkably, it worked.", lambda l, d_, T: renten(l + 5, 6.6, T), tr=None, sfx=[(0.05, "stamp")], shake=[(0.07, 0.25, 12)]),
+        S("The lesson? Money only works as long as people trust it.", end_w, tr="zoom"),
+        S("Could it happen to your money? Follow for more finance history.", lambda l, d_, T: cta_card(l, d_, T, "COULD IT HAPPEN", "TO YOUR MONEY?", lambda: bg("chart")), tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":

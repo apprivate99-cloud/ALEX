@@ -113,7 +113,6 @@ def louisiana(lt, dur, T):
     for (x, y), lab in [((px, py), "PARIS"), ((nx, ny), "LOUISIANA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 200), W - 200))
     pill(d, 230, "THE MISSISSIPPI COMPANY", INK, GOLD, 48)
-    if lt < dur * 0.4: d.rectangle((0, 1240, W, 1340), fill=(10, 20, 30, 230)); tc(d, 1256, "1716: FRANCE GIVES LAW A BANK", F("sans_black", 50), GOLD)
     return img
 
 
@@ -194,13 +193,32 @@ def twist(lt, dur, T):
     card(d, (190, 420, 890, 840), [("PAPER MONEY", "serif_bold", 74, INK), ("backed by", "serif", 52, INK), ("TRUST", "sans_black", 96, RED)], fill=(236, 226, 196), outline=(90, 70, 40))
     d.rounded_rectangle((214, 444, 866, 816), 12, outline=(90, 70, 40), width=3)
     tc(d, 900, "is how money works today", F("serif_bold", 56), CREAM)
-    if lt > dur * 0.6: e = back((lt - dur * 0.6) / 0.4); pill(d, 1060 + 20 * (1 - e), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 46)
+    return img
+
+
+def bank1716(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "PARIS · 1716", CREAM, (40, 40, 40), 48)
+    tc(d, 330, "LAW GETS A BANK", F("sans_black", 90), INK)
+    e = back(lt / 0.45); us_bank(d, 640, 1180, 1.5 * clamp(e) + 0.01)
+    law(d, 230, 1250, 0.85, T, "smug")
+    return img
+
+
+def printing(lt, dur, T):
+    img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 230, "BUT THERE WAS A CATCH", fit(d, "BUT THERE WAS A CATCH", "sans_black", 80, W - 100), RED)
+    n = int(4 + 40 * eio(lt / dur))
+    for i in range(n):
+        x = 200 + (i % 8) * 95; y = 1100 - (i // 8) * 70
+        d.rounded_rectangle((x - 40, y - 26, x + 40, y + 26), 6, fill=(236, 226, 196), outline=(90, 70, 40), width=3)
+    tc(d, 420, "MORE AND MORE", F("sans_black", 76), CREAM); tc(d, 520, "PAPER MONEY", F("sans_black", 96), GOLD)
     return img
 
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=104, music_amp=0.06, gap=0.06,
     chords=[[110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8], [82.4, 103.8, 123.5]],
     scenes=[
         S("Did you know France once handed its entire economy to a Scottish gambler, who'd been sentenced to death for murder?", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
@@ -209,15 +227,18 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp
         S("For years he lived as a gambler, while studying money and banking. Then he found the perfect place to test his ideas.", gambler, tr="whip", sfx=[(0.5, "coin"), (1.2, "coin")]),
         S("After decades of war, France was drowning in debt.", france, tr="zoom"),
         S("And Law had a bold solution: replace gold and silver with paper money.", idea, tr="whip", sfx=[(0.6, "pop")]),
-        S("France gave him a bank to try it. Then he took control of a trading company with rights to French Louisiana: the Mississippi Company.", louisiana, tr="whip"),
+        S("France gave him a bank to try it.", bank1716, tr="whip", sfx=[(0.3, "ding")]),
+        S("Then he took control of a trading company with rights to French Louisiana: the Mississippi Company.", louisiana, tr="zoom"),
         S("Law sold Louisiana as a land of untold riches, and Paris went wild for the shares.", frenzy, tr="whip", sfx=[(0.4 + 0.3 * i, "coin") for i in range(6)]),
         S("In a single year, the share price shot up from about five hundred livres to around ten thousand.", chart_up, tr="whip", sfx=[("END-1.2", "ding")]),
         S("So many people got rich so fast that a new word took off: millionaire.", millionaire, tr="whip", sfx=[(0.1 + 0.11 * i, "tick") for i in range(11)]),
         S("By January seventeen twenty, the gambler from Scotland was in charge of France's entire economy.", controller, tr="zoom", sfx=[(0.4, "ding")]),
-        S("But there was a catch. The boom was fuelled by printing more and more paper money. And when investors tried to swap their paper for gold, the whole thing came apart.", chart_down, tr="whip", sfx=[("END-2.4", "boom")], shake=[(3.6, 0.4, 18)]),
+        S("But there was a catch. The boom was fuelled by printing more and more paper money.", printing, tr="whip", sfx=[(0.3 + 0.2 * i, "tick") for i in range(10)]),
+        S("And when investors tried to swap their paper for gold, the whole thing came apart.", chart_down, tr="whip", sfx=[("END-2.4", "boom")], shake=[(2.6, 0.4, 18)]),
         S("Prices crashed, angry crowds filled the streets, and by the end of the year, Law had fled France for good.", riots, tr="whip"),
         S("He died nearly broke, in Venice, in seventeen twenty nine.", venice, tr="whip"),
-        S("And yet, here's the twist. Law's big idea, paper money backed by trust instead of gold, is exactly how almost all money works today. Would you have trusted John Law? Follow for more finance history.", twist, tr="flash", sfx=[(-0.9, "riser")]),
+        S("And yet, here's the twist. Law's big idea, paper money backed by trust instead of gold, is exactly how almost all money works today.", twist, tr="flash", sfx=[(-0.9, "riser")]),
+        S("Would you have trusted John Law? Follow for more finance history.", lambda l, d_, T: cta_card(l, d_, T, "WOULD YOU HAVE", "TRUSTED JOHN LAW?", lambda: bg("burgundy")), tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":

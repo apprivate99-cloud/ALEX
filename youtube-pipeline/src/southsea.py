@@ -4,7 +4,7 @@ import kit
 kit.ERA = "1700s"
 kit.COIN_SYM = "£"
 from tulip_v2 import stamp_img, slam
-from kit2 import map_face
+from kit2 import map_face, cta_card
 WIG=(236, 232, 222); WIG_D=(196, 190, 176); NAVY=(16, 30, 60)
 
 def newton(d, x, y, s, t, mood="happy", look=0, arm=None):
@@ -129,7 +129,6 @@ def end_ss(lt, dur, T):
     img = bg("burgundy").copy(); d = ImageDraw.Draw(img, "RGBA"); rays(d, T, (255, 200, 120, 14))
     e = back(lt / 0.4); tc(d, 250 + 30 * (1 - e), "EVEN GENIUSES", F("sans_black", 110), CREAM); tc(d, 380, "GET FOMO", F("sans_black", 150), GOLD)
     newton(d, 540, 1250, 1.0, T, "smug" if lt > 1 else "happy")
-    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 580 + 40 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 48)
     return img
 
 ERMINE = (250, 248, 240)
@@ -178,7 +177,7 @@ def hutcheson(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=108, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=108, music_amp=0.06, gap=0.06,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8]],
     scenes=[
         S("Did you know Isaac Newton lost a fortune on a single stock? One of the smartest people who ever lived.", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
@@ -199,7 +198,8 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=108, music_amp
         S("Newton reportedly lost around twenty thousand pounds, which would be millions in today's money.", loss, tr="whip"),
         S("He's often quoted as saying: I can calculate the motions of the heavenly bodies, but not the madness of people.", quote, tr="whip"),
         S("The funny thing is, there's no solid evidence that he ever actually said it.", lambda l, d_, T: quote(l, d_, T, 1), tr=None, sfx=[(0.5, "stamp")], shake=[(0.52, 0.25, 14)]),
-        S("The lesson? Even geniuses can fall for the fear of missing out. Would you have sold in April? Follow for more finance history.", end_ss, tr="zoom"),
+        S("The lesson? Even geniuses can fall for the fear of missing out.", end_ss, tr="zoom"),
+        S("Would you have sold in April? Follow for more finance history.", lambda l, d_, T: cta_card(l, d_, T, "WOULD YOU HAVE", "SOLD IN APRIL?", lambda: bg("burgundy")), tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":
