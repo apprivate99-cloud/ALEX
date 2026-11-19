@@ -179,3 +179,45 @@ def tts_scene(text, sid, speed=1.08, accent="gb", breath=0.14):
     out.append(s[pos:]); spans.append((t, t + (len(s) - pos) / SR))
     while len(spans) < len(sents): spans.append(spans[-1])
     return np.concatenate(out), spans
+
+
+# ---------- exact word timings ----------
+ASR_DIR = os.path.join(os.path.dirname(__file__), "..", "voices", "sherpa-onnx-zipformer-small-en-2023-06-26")
+_asr = None
+def word_times(audio, script_words):
+    """Return a start time (seconds) for every word in `script_words`, measured from the audio
+    with a speech recogniser and matched back to the script. Unmatched words are interpolated."""
+    global _asr
+    import difflib, re
+    if _asr is None:
+        d = ASR_DIR
+        _asr = sherpa_onnx.OfflineRecognizer.from_transducer(
+            encoder=d + "/encoder-epoch-99-avg-1.int8.onnx", decoder=d + "/decoder-epoch-99-avg-1.onnx",
+            joiner=d + "/joiner-epoch-99-avg-1.int8.onnx", tokens=d + "/tokens.txt", num_threads=4, decoding_method="greedy_search")
+    # the recogniser expects 16 kHz
+    n16 = int(len(audio) * 16000 / SR)
+    a16 = np.interp(np.linspace(0, len(audio) - 1, n16), np.arange(len(audio)), audio).astype(np.float32)
+    st = _asr.create_stream(); st.accept_waveform(16000, a16); _asr.decode_stream(st)
+    toks, ts = st.result.tokens, st.result.timestamps
+    # rebuild recognised words (BPE pieces starting with ▁ begin a word)
+    rec, rec_t = [], []
+    for tk, t in zip(toks, ts):
+        if tk.startswith(("▁", " ")) or not rec: rec.append(tk.lstrip("▁ ").lower()); rec_t.append(t)
+        else: rec[-1] += tk.lower()
+    norm = lambda w: re.sub(r"[^a-z0-9]", "", w.lower())
+    sw = [norm(w) for w in script_words]
+    out = [None] * len(sw)
+    sm = difflib.SequenceMatcher(a=sw, b=[norm(w) for w in rec], autojunk=False)
+    for blk in sm.get_matching_blocks():
+        for k in range(blk.size): out[blk.a + k] = rec_t[blk.b + k]
+    # fill gaps by interpolating between known neighbours
+    known = [i for i, v in enumerate(out) if v is not None]
+    total = len(audio) / SR
+    if not known: return [total * i / max(len(sw), 1) for i in range(len(sw))]
+    for i in range(len(out)):
+        if out[i] is None:
+            lo = max([k for k in known if k < i], default=None); hi = min([k for k in known if k > i], default=None)
+            if lo is None: out[i] = out[hi] * i / max(hi, 1)
+            elif hi is None: out[i] = out[lo] + (total - out[lo]) * (i - lo) / (len(out) - lo)
+            else: out[i] = out[lo] + (out[hi] - out[lo]) * (i - lo) / (hi - lo)
+    return out

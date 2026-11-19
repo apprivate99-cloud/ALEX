@@ -1,7 +1,7 @@
 """Shorts renderer v2: full-frame scenes, transitions, shake, SFX, word-highlight captions."""
 import math, os, subprocess, numpy as np, soundfile as sf
 from PIL import Image, ImageDraw, ImageFilter
-from engine import tts, tts_scene, split_sentences, check_words, font, ease, clamp, W, H, FPS, SR
+from engine import tts, tts_scene, split_sentences, word_times, check_words, font, ease, clamp, W, H, FPS, SR
 
 def eio(x): x = clamp(x); return x * x * (3 - 2 * x)
 def back(x, k=1.70158): x = clamp(x) - 1; return 1 + x * x * ((k + 1) * x + k)
@@ -75,6 +75,35 @@ def cap_text(s):
     for a, b in CAP_MAP: s = s.replace(a, b).replace(a[0].upper() + a[1:], b)
     return s
 
+
+def cap_word_times(x, si, cap_words):
+    """Start time (within the scene) of each caption word of sentence si, from measured speech timing.
+    With cap_words=None, returns the start of sentence si."""
+    import difflib, re
+    sc = x["sc"]
+    if "_wt" not in sc:   # measure once per scene
+        spoken = sc["say"].split()
+        sc["_wt"] = (spoken, word_times(x["audio"], spoken))
+    spoken, times = sc["_wt"]
+    sents = split_sentences(sc["say"]); off = sum(len(z.split()) for z in sents[:si])
+    sw, st = spoken[off: off + len(sents[si].split())], times[off: off + len(sents[si].split())]
+    if cap_words is None: return st[0]
+    norm = lambda w: re.sub(r"[^a-z0-9]", "", w.lower())
+    m = difflib.SequenceMatcher(a=[norm(w) for w in cap_words], b=[norm(w) for w in sw], autojunk=False)
+    out = [None] * len(cap_words); last_b = -1
+    for blk in m.get_matching_blocks():
+        for k in range(blk.size): out[blk.a + k] = st[blk.b + k]
+    # caption-only tokens (e.g. "1929" for "nineteen twenty nine") start where the next unmatched spoken word starts
+    bi = 0
+    for i in range(len(out)):
+        if out[i] is not None:
+            bi = st.index(out[i]) + 1 if out[i] in st else bi
+        else:
+            out[i] = st[min(bi, len(st) - 1)]
+            bi += 1
+    for i in range(1, len(out)): out[i] = max(out[i], out[i - 1])
+    return out
+
 # ---------- render ----------
 def render(spec, out_path):
     check_words([sc["say"] for sc in spec["scenes"]])
@@ -129,9 +158,8 @@ def render(spec, out_path):
                 for c in merged:
                     if len(c) <= 4 and sum(len(w) for w in c) <= 19: sizes.append(len(c)); continue   # short phrase: keep whole
                     n = max(1, -(-len(c) // 3)); sizes += [len(c) // n + (1 if k < len(c) % n else 0) for k in range(n)]
-                w8 = [len(w) + 3 for w in words]; tot = sum(w8); acc = 0; wt = []
-                for w, k in zip(words, w8): wt.append((x["st"] + s0 + (s1 - s0) * acc / tot, w)); acc += k
-                nxt = x["st"] + spans[si + 1][0] if si + 1 < len(spans) else x["st"] + x["dur"] + 0.15
+                wt = [(x["st"] + tm, w) for tm, w in zip(cap_word_times(x, si, words), words)]
+                nxt = (x["st"] + cap_word_times(x, si + 1, None)) if si + 1 < len(spans) else x["st"] + x["dur"] + 0.15
                 i = 0
                 for sz in sizes:
                     ch = wt[i:i + sz]; end = wt[i + sz][0] if i + sz < len(wt) else nxt
