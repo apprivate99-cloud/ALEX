@@ -9,6 +9,10 @@ if [ ! -d voices/kokoro-multi-lang-v1_0 ]; then
   curl -fL -o voices/k.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/tts-models/kokoro-multi-lang-v1_0.tar.bz2
   tar xjf voices/k.tar.bz2 -C voices && rm voices/k.tar.bz2
 fi
+if [ ! -d voices/sherpa-onnx-zipformer-small-en-2023-06-26 ]; then   # word timing for captions
+  curl -fL -o voices/asr.tar.bz2 https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-zipformer-small-en-2023-06-26.tar.bz2
+  tar xjf voices/asr.tar.bz2 -C voices && rm voices/asr.tar.bz2
+fi
 [ -f data/countries.geojson ] || curl -fL -o data/countries.geojson \
   https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_50m_admin_0_countries.geojson
 echo "Setup done."
