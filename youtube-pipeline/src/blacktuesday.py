@@ -32,8 +32,6 @@ def hook_map(lt, dur, T):
     tc(d, ny - 80, "WALL STREET", F("sans_black", 38), CREAM, 5, (10, 20, 30), x=nx - 90)
     if lt > 0.6: coin_drain(d, nx, ny + 40, T, n=12, spread=60, fall=380)
     pill(d, 230, "OCTOBER 1929", INK, GOLD, 50)
-    if lt > dur * 0.55:
-        e = back((lt - dur * 0.55) / 0.4); pill(d, 330 + 20 * (1 - e), "THE WALL STREET CRASH", CREAM, (150, 20, 34), 52)
     v = 23 * eio((lt - 0.6) / (dur * 0.5))
     tc(d, 1130, f"-{v:.0f}%", F("sans_black", 170), RED, 10, (20, 4, 6))
     tc(d, 1330, "in just two days", F("serif_bold", 54), CREAM, 5, (10, 20, 30))
@@ -225,7 +223,7 @@ def tuesday(lt, dur, T):
     return img
 
 
-def margin_call(lt, dur, T):
+def margin_call(lt, dur, T, stamp="WIPED OUT"):
     img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
     tc(d, 220, "MARGIN CALL", F("sans_black", 110), RED)
     tc(d, 360, "lenders want their money back", F("serif_bold", 54), CREAM)
@@ -233,7 +231,7 @@ def margin_call(lt, dur, T):
     ring = 8 * math.sin(T * 40) if int(T * 3) % 2 == 0 else 0
     d.rounded_rectangle((560 + ring, 760, 760 + ring, 880), 18, fill=(30, 30, 30)); d.ellipse((610 + ring, 720, 710 + ring, 780), fill=(30, 30, 30))
     for k in range(3): d.arc((760 + ring - 20 + k * 30, 740 - k * 20, 840 + ring + k * 30, 900 + k * 20), -50, 50, fill=CREAM, width=6)
-    if lt > dur * 0.55: slam(img, stamp_img("WIPED OUT", RED, 90, -4), lt, dur * 0.55, 540, 560)
+    if lt > dur * 0.55: slam(img, stamp_img(stamp, RED, 90, -4), lt, dur * 0.55, 540, 560)
     return img
 
 
@@ -266,7 +264,134 @@ def lesson(lt, dur, T):
     tc(d, 230 + 20 * (1 - e), "BORROWING", F("sans_black", 120), CREAM); tc(d, 370, "TO BUY AT THE TOP", F("sans_black", 76), DECO)
     tc(d, 480, "turns a crash into", F("serif_bold", 56), CREAM); tc(d, 560, "A CATASTROPHE", F("sans_black", 96), RED)
     merchant(d, 540, 1250, 0.8, T, "sad", coat=(40, 40, 60))
-    if lt > dur * 0.55: e2 = back((lt - dur * 0.55) / 0.4); pill(d, 720 + 20 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 44)
+    return img
+
+
+
+MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+
+
+def month_page(d, cx, cy, s, month, year, col=RED):
+    w, h = 420 * s, 460 * s
+    d.rounded_rectangle((cx - w / 2 + 10, cy - h / 2 + 14, cx + w / 2 + 10, cy + h / 2 + 14), int(30 * s), fill=(0, 0, 0, 90))
+    d.rounded_rectangle((cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2), int(30 * s), fill=(255, 255, 255), outline=INK, width=6)
+    d.rounded_rectangle((cx - w / 2, cy - h / 2, cx + w / 2, cy - h / 2 + 130 * s), int(30 * s), fill=col)
+    d.rectangle((cx - w / 2, cy - h / 2 + 90 * s, cx + w / 2, cy - h / 2 + 130 * s), fill=col)
+    for k in (-1, 1): d.ellipse((cx + k * 110 * s - 16, cy - h / 2 - 22, cx + k * 110 * s + 16, cy - h / 2 + 10), fill=(90, 90, 96))
+    d.text((cx, cy - h / 2 + 66 * s), str(year), font=F("sans_black", int(64 * s)), fill=(255, 255, 255), anchor="mm")
+    d.text((cx, cy + 70 * s), month, font=F("sans_black", int(170 * s)), fill=INK, anchor="mm")
+
+
+def cal_1929(lt, dur, T):
+    """Calendar flicks through 1929 and lands on October."""
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    flick = 0.13; idx = min(9, int(lt / flick)); landed = lt > 9 * flick + 0.05
+    lift = 0 if landed else 18 * abs(math.sin(lt / flick * math.pi))
+    if not landed and idx < 9: month_page(d, 540, 800 - 6, 1.6, MONTHS[idx + 1], 1929, (120, 120, 126))  # page underneath
+    month_page(d, 540, 800 - lift, 1.6, MONTHS[idx], 1929, RED if landed else (120, 120, 126))
+    if landed:
+        e = back((lt - 9 * flick - 0.05) / 0.35)
+        r = 300 + 20 * (1 - e); d.ellipse((540 - r, 880 - r * 0.55, 540 + r, 880 + r * 0.55), outline=RED + (int(255 * clamp(e)),), width=12)
+        tc(d, 300, "OCTOBER 1929", F("sans_black", 96), CREAM + (int(255 * clamp(e)),), 6, (10, 10, 10))
+    return img
+
+
+def crash_title(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    e = back(lt / 0.35)
+    tc(d, 300 + 30 * (1 - e), "THE", F("sans_black", 110), CREAM + (int(255 * clamp(e)),), 6, (10, 10, 10))
+    tc(d, 430 + 30 * (1 - e), "WALL STREET", F("sans_black", 150), DECO + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    tc(d, 600 + 30 * (1 - e), "CRASH", F("sans_black", 200), RED + (int(255 * clamp(e)),), 10, (10, 10, 10))
+    p = eio((lt - 0.4) / (dur - 0.6)); pts = [(140 + 800 * u, 900 + 40 * math.sin(u * 9) * (1 - u) + 380 * u ** 1.6) for u in np.linspace(0, p, 60)]
+    if len(pts) > 1:
+        d.line(pts, fill=RED, width=16, joint="curve"); x, y = pts[-1]; a = math.atan2(pts[-1][1] - pts[-2][1], pts[-1][0] - pts[-2][0])
+        d.polygon([(x + 40 * math.cos(a), y + 40 * math.sin(a)), (x + 34 * math.cos(a + 2.4), y + 34 * math.sin(a + 2.4)), (x + 34 * math.cos(a - 2.4), y + 34 * math.sin(a - 2.4))], fill=RED)
+    return img
+
+
+def rewind(lt, dur, T):
+    """Years spin back from 1929 to 1920, then the decade title lands."""
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    k = eio(lt / (dur * 0.6)); yr = int(round(1929 - 9 * k))
+    for i in range(10):   # rewind stripes
+        y = (i * 190 + lt * 2400 * (1 - k)) % H; d.line([(0, y), (W, y)], fill=(255, 255, 255, int(30 * (1 - k))), width=6)
+    tc(d, 300, "◀◀ REWIND", F("sans_black", 64), DECO)
+    tc(d, 560, str(yr), F("sans_black", 260), CREAM, 10, (10, 10, 10))
+    if lt > dur * 0.62:
+        e = back((lt - dur * 0.62) / 0.35)
+        pill(d, 900 + 20 * (1 - e), "THE ROARING TWENTIES", INK, DECO, 64)
+    return img
+
+
+def exchange(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "EVERYONE WANTED IN", INK, DECO, 50)
+    bx = 760; d.rectangle((bx - 240, 520, bx + 240, 1240), fill=(214, 210, 200))
+    d.polygon([(bx - 270, 520), (bx, 400), (bx + 270, 520)], fill=(230, 226, 216))
+    tc(d, 440, "STOCK", F("serif_bold", 44), INK, x=bx); tc(d, 545, "EXCHANGE", F("serif_bold", 46), INK, x=bx)
+    for k2 in range(5): d.rectangle((bx - 200 + k2 * 90, 620, bx - 170 + k2 * 90, 1180), fill=(236, 232, 222))
+    d.rectangle((bx - 70, 1060, bx + 70, 1240), fill=(40, 36, 34))
+    for i in range(6):   # queue of people walking in
+        u = ((lt * 0.35 + i / 6) % 1); x = -60 + 700 * u
+        merchant(d, x, 1260, 0.6, T + i, "happy", coat=[(30, 30, 40), (60, 40, 70), (40, 60, 50), (70, 50, 30), (50, 50, 80), (30, 50, 60)][i], cap=(i % 2 == 1))
+    return img
+
+
+def fisher_intro(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 230, "EVEN THE EXPERTS", F("sans_black", 90), INK)
+    tc(d, 340, "were convinced", F("serif_bold", 60), (110, 80, 50))
+    merchant(d, 540, 1250, 1.15, T, "smug", coat=FISHER_COAT, hat=False, beard=False)
+    hx, hy = 540, 1250 - 410 * 1.15 + math.sin(T * 5 + 540) * 4 * 1.15
+    d.ellipse((hx - 62, hy - 36, hx - 6, hy + 10), outline=INK, width=6); d.ellipse((hx + 6, hy - 36, hx + 62, hy + 10), outline=INK, width=6)
+    e = back((lt - 0.3) / 0.35); pill(d, 470 + 20 * (1 - e), "IRVING FISHER · ECONOMIST", CREAM, (40, 40, 40), 44)
+    return img
+
+
+def panic_cal(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    day = 15 + min(9, int(lt / 0.09)); landed = day == 24
+    calendar(d, 540, 760, 1.6, "OCT", day, 1929, RED if landed else (120, 120, 126))
+    if landed:
+        e = back((lt - 0.85) / 0.35); tc(d, 330, "NINE DAYS LATER", F("sans_black", 90), CREAM + (int(255 * clamp(e)),), 6, (10, 10, 10))
+        tc(d, 1080 + 20 * (1 - e), "PANIC", F("sans_black", 170), RED + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    return img
+
+
+def one_day(lt, dur, T, which):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    day, name, pct = (28, "MONDAY", 12.8) if which == 0 else (29, "TUESDAY", 11.7)
+    calendar(d, 540, 520, 1.3, "OCT", day, 1929)
+    tc(d, 760, f"BLACK {name}", F("sans_black", 96), RED, 6, (10, 10, 10))
+    e = back((lt - 0.3) / 0.4)
+    tc(d, 900, f"-{pct * clamp(e):.1f}%", F("sans_black", 190), CREAM, 8, (10, 10, 10))
+    if which == 1 and lt > dur * 0.4:
+        n = 16410030 * eio((lt - dur * 0.4) / 1.0)
+        tc(d, 1140, f"{n:,.0f}", F("sans_black", 84), DECO, 6, (10, 10, 10)); tc(d, 1250, "shares traded", F("serif_bold", 48), CREAM)
+    return img
+
+
+def profits(lt, dur, T):
+    img = bg("chart").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 230, "WHY SO FAST?", F("sans_black", 110), CREAM)
+    X0, X1, Y0, Y1 = 170, 960, 1180, 520; p = eio(lt / (dur * 0.8))
+    for lab, end, col in [("SHARE PRICES", 0.95, RED), ("COMPANY PROFITS", 0.35, GREEN_UP)]:
+        pts = [(X0 + (X1 - X0) * u, Y0 - (Y0 - Y1) * (0.12 + (end - 0.12) * u ** (2.2 if end > 0.5 else 1))) for u in np.linspace(0, p, 60)]
+        if len(pts) > 1: d.line(pts, fill=col, width=12, joint="curve")
+        x, y = pts[-1]; tc(d, y + (30 if end < 0.5 else -70), lab, F("sans_black", 40), col, x=min(max(x - 120, 220), W - 220))
+    if lt > dur * 0.7:
+        e = back((lt - dur * 0.7) / 0.35); pill(d, 1260 + 20 * (1 - e), "PRICES RACED AHEAD", CREAM, (150, 20, 34), 50)
+    return img
+
+
+def cta(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    e = back(lt / 0.4)
+    tc(d, 380 + 30 * (1 - e), "COULD IT", F("sans_black", 150), CREAM + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    tc(d, 560 + 30 * (1 - e), "HAPPEN AGAIN?", F("sans_black", 120), RED + (int(255 * clamp(e)),), 8, (10, 10, 10))
+    tc(d, 760, "?", F("serif_bold", 300 + int(20 * math.sin(T * 4))), DECO)
+    if lt > dur * 0.4:
+        e2 = back((lt - dur * 0.4) / 0.4); pill(d, 1180 + 20 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, DECO, 46)
     return img
 
 
@@ -275,22 +400,32 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=112, music_amp=0.06, gap=0.06,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
-        S("Did you know the American stock market once lost almost a quarter of its value in just two days? It happened in October nineteen twenty nine. It became known as the Wall Street Crash, and it was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
-        S("To understand how it happened, we need to go back to the roaring twenties. The economy was booming, and stock prices had been climbing for years.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
-        S("Ordinary people wanted in, and many didn't even use their own money. They bought on margin, putting down a small deposit, and borrowing the rest.", margin, tr="whip", sfx=[(1.6, "riser")]),
+        S("Did you know the American stock market once lost almost a quarter of its value in just two days?", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
+        S("It happened in October nineteen twenty nine.", cal_1929, tr="zoom", sfx=[(0.13 * i, "tick") for i in range(10)] + [(1.2, "ding")]),
+        S("It became known as the Wall Street Crash, and it was only the beginning.", crash_title, tr="flash", sfx=[(0.1, "boom")], shake=[(0.12, 0.35, 16)]),
+        S("To understand how it happened, we need to go back to the roaring twenties.", rewind, tr="whip", sfx=[(0.1, "riser"), ("END-1.6", "ding")]),
+        S("The economy was booming, and stock prices had been climbing for years.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
+        S("Ordinary people wanted in, and many didn't even use their own money.", exchange, tr="whip"),
+        S("They bought on margin, putting down a small deposit, and borrowing the rest.", margin, tr="whip", sfx=[(1.2, "riser")]),
         S("On September third, nineteen twenty nine, the Dow hit a record high of three hundred and eighty one.", peak, tr="whip", sfx=[("END-0.9", "ding")]),
-        S("Even the experts were convinced. In mid October, the famous economist Irving Fisher said stocks had reached what looks like a permanently high plateau.", fisher, tr="whip"),
-        S("Nine days later, the panic began. On Black Thursday, October twenty fourth, prices fell so fast that the ticker tape fell far behind.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
+        S("Even the experts were convinced.", fisher_intro, tr="whip"),
+        S("In mid October, Irving Fisher said stocks had reached what looks like a permanently high plateau.", fisher, tr=None),
+        S("Nine days later, the panic began.", panic_cal, tr="whip", sfx=[(0.09 * i, "tick") for i in range(10)] + [(0.9, "boom")], shake=[(0.9, 0.3, 14)]),
+        S("On Black Thursday, October twenty fourth, prices fell so fast that the ticker tape fell far behind.", thursday, tr="whip", sfx=[(0.3 + 0.2 * i, "tick") for i in range(14)]),
         S("That afternoon, top bankers pooled their money and bought shares to calm the market. It worked, but only for a few days.", bankers, tr="whip", sfx=[(0.6, "coin"), (1.0, "coin"), ("END-2.4", "thud")]),
-        S("On Monday, the Dow fell almost thirteen percent. On Tuesday, it fell another twelve. A record sixteen million shares changed hands on Black Tuesday alone.", two_days, tr="flash", sfx=[(0.3, "boom"), (2.6, "boom")], shake=[(0.32, 0.3, 14), (2.62, 0.3, 14)]),
+        S("On Monday, the Dow fell almost thirteen percent.", lambda l, d_, T: one_day(l, d_, T, 0), tr="flash", sfx=[(0.3, "boom")], shake=[(0.32, 0.3, 14)]),
+        S("On Tuesday, it fell another twelve. A record sixteen million shares changed hands on Black Tuesday alone.", lambda l, d_, T: one_day(l, d_, T, 1), tr="flash", sfx=[(0.3, "boom")], shake=[(0.32, 0.3, 14)]),
         S("The next day, the entertainment paper Variety ran one of the most famous headlines in history: Wall Street lays an egg.", headline, tr="drop", sfx=[(0.2, "thud"), (1.1, "pop")]),
         S("Within weeks, around thirty billion dollars in share value had been wiped out. That's over five hundred billion dollars in today's money.", wiped, tr="whip", sfx=[(0.3 + 0.12 * i, "tick") for i in range(10)] + [("END-2.6", "boom")]),
-        S("So why did it fall so fast? Prices had raced far ahead of real company profits. When they started falling, lenders demanded their margin loans back. Investors were forced to sell, which pushed prices even lower, and triggered even more margin calls.", spiral, tr="whip", sfx=[(0.3 + 0.5 * i, "tick") for i in range(3)]),
+        S("So why did it fall so fast? Prices had raced far ahead of real company profits.", profits, tr="whip"),
+        S("When they started falling, lenders demanded their margin loans back.", lambda l, d_, T: margin_call(l, d_, T, "PAY UP"), tr="whip", sfx=[("END-1.2", "stamp")]),
+        S("Investors were forced to sell, which pushed prices even lower, and triggered even more margin calls.", spiral, tr="whip", sfx=[(0.3 + 0.5 * i, "tick") for i in range(3)]),
         S("And the fall kept going. By July nineteen thirty two, the Dow was down almost ninety percent from its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
         S("A thousand dollars invested at the top was now worth around one hundred and eight dollars.", thousand, tr="whip", sfx=[(0.5 + 0.25 * i, "tick") for i in range(9)]),
-        S("Thousands of banks failed, and America sank into the Great Depression.", banks, tr="zoom", sfx=[(0.3 + 0.25 * i, "pop") for i in range(9)]),
+        S("Thousands of banks failed, and America sank into the Great Depression.", banks, tr="zoom", sfx=[(0.3 + 0.25 * i, "pop") for i in range(7)]),
         S("It took twenty five years, until nineteen fifty four, for the Dow to get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
-        S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe. Could it happen again? Follow for more finance history.", lesson, tr="zoom"),
+        S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe.", lesson, tr="zoom"),
+        S("Could it happen again? Follow for more finance history.", cta, tr="flash", sfx=[(0.2, "riser")]),
     ])
 
 if __name__ == "__main__":
