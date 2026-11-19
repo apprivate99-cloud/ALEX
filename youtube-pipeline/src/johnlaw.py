@@ -203,7 +203,7 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp=0.06, gap=0.16,
     chords=[[110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8], [82.4, 103.8, 123.5]],
     scenes=[
-        S("Did you know that France once handed its entire economy to a Scottish gambler, who'd been sentenced to death for murder?", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
+        S("Did you know France once handed its entire economy to a Scottish gambler, who'd been sentenced to death for murder?", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
         S("His name was John Law. In sixteen ninety four, he killed a man in a duel in London, and the court sentenced him to death.", duel, tr="zoom", sfx=[(1.0, "tick"), (1.4, "tick"), ("END-3.2", "thud")]),
         S("Somehow, he escaped from prison, and slipped away to mainland Europe.", prison, tr="whip", sfx=[(0.5, "thud"), (1.4, "stamp")]),
         S("For years he lived as a gambler, while studying money and banking. Then he found the perfect place to test his ideas.", gambler, tr="whip", sfx=[(0.5, "coin"), (1.2, "coin")]),

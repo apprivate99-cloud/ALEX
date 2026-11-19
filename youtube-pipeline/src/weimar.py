@@ -167,7 +167,7 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=96, music_amp=0.06, gap=0.16,
     chords=[[110, 130.8, 164.8], [98, 123.5, 146.8], [87.3, 110, 130.8], [82.4, 103.8, 123.5]],
     scenes=[
-        S("Did you know that in nineteen twenty three, some Germans burned banknotes in their stoves, because the money was worth less than the paper it was printed on?", stove_hook, sfx=[(0.4, "whoosh")]),
+        S("Did you know some Germans once burned banknotes in their stoves? In nineteen twenty three, their money was worth less than the paper it was printed on.", stove_hook, sfx=[(0.4, "whoosh")]),
         S("Just nine years earlier, in nineteen fourteen, one US dollar was worth four point two German marks.", lambda l, d_, T: hook(l, d_, T, 0), tr="zoom", sfx=[(0.3, "coin")]),
         S("By late nineteen twenty three, that same dollar was worth four point two trillion.", lambda l, d_, T: hook(l, d_, T, 1), tr="flash", sfx=[(0.3 + 0.12 * i, "tick") for i in range(12)] + [("END-0.2", "boom")], shake=[(2.0, 0.4, 16)]),
         S("So how did this happen? After World War One, Germany owed enormous reparations. Then, in nineteen twenty three, France and Belgium occupied the Ruhr, Germany's industrial heartland.", ruhr, tr="zoom", sfx=[("END-3.2", "thud")]),

@@ -275,7 +275,7 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=112, music_amp=0.06, gap=0.16,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
-        S("Did you know that in just two days in October nineteen twenty nine, the American stock market lost almost a quarter of its value? It became known as the Wall Street Crash, and it was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
+        S("Did you know the American stock market once lost almost a quarter of its value in just two days? It happened in October nineteen twenty nine. It became known as the Wall Street Crash, and it was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
         S("To understand how it happened, we need to go back to the roaring twenties. The economy was booming, and stock prices had been climbing for years.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
         S("Ordinary people wanted in, and many didn't even use their own money. They bought on margin, putting down a small deposit, and borrowing the rest.", margin, tr="whip", sfx=[(1.6, "riser")]),
         S("On September third, nineteen twenty nine, the Dow hit a record high of three hundred and eighty one.", peak, tr="whip", sfx=[("END-0.9", "ding")]),

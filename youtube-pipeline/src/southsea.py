@@ -181,7 +181,7 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=108, music_amp=0.06, gap=0.16,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8]],
     scenes=[
-        S("Did you know that Isaac Newton, one of the smartest people who ever lived, lost a fortune on a single stock?", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
+        S("Did you know Isaac Newton lost a fortune on a single stock? One of the smartest people who ever lived.", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
         S("In seventeen twenty, everyone in London wanted shares in the South Sea Company. Even King George the First was its governor.", king, tr="zoom", sfx=[("END-2.2", "ding")]),
         S("It promised huge riches from trade with South America. But Spain allowed it just one trading ship a year.", atlantic, tr="whip", sfx=[("END-2.0", "thud")]),
         S("Real profits were tiny, but the hype was enormous, and insiders even bribed politicians to keep the price climbing.", hype, tr="whip", sfx=[("END-1.8", "riser")]),
