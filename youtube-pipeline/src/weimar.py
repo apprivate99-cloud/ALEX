@@ -164,7 +164,7 @@ def end_w(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.12, bpm=96, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=96, music_amp=0.06, gap=0.16,
     chords=[[110, 130.8, 164.8], [98, 123.5, 146.8], [87.3, 110, 130.8], [82.4, 103.8, 123.5]],
     scenes=[
         S("Did you know that in nineteen twenty three, some Germans burned banknotes in their stoves, because the money was worth less than the paper it was printed on?", stove_hook, sfx=[(0.4, "whoosh")]),

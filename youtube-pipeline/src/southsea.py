@@ -178,7 +178,7 @@ def hutcheson(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.12, bpm=108, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=108, music_amp=0.06, gap=0.16,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8]],
     scenes=[
         S("Did you know that Isaac Newton, one of the smartest people who ever lived, lost a fortune on a single stock?", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),

@@ -200,7 +200,7 @@ def twist(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.12, bpm=104, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp=0.06, gap=0.16,
     chords=[[110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8], [82.4, 103.8, 123.5]],
     scenes=[
         S("Did you know that France once handed its entire economy to a Scottish gambler, who'd been sentenced to death for murder?", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),

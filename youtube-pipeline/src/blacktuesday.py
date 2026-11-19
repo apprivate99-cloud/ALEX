@@ -32,6 +32,8 @@ def hook_map(lt, dur, T):
     tc(d, ny - 80, "WALL STREET", F("sans_black", 38), CREAM, 5, (10, 20, 30), x=nx - 90)
     if lt > 0.6: coin_drain(d, nx, ny + 40, T, n=12, spread=60, fall=380)
     pill(d, 230, "OCTOBER 1929", INK, GOLD, 50)
+    if lt > dur * 0.55:
+        e = back((lt - dur * 0.55) / 0.4); pill(d, 330 + 20 * (1 - e), "THE WALL STREET CRASH", CREAM, (150, 20, 34), 52)
     v = 23 * eio((lt - 0.6) / (dur * 0.5))
     tc(d, 1130, f"-{v:.0f}%", F("sans_black", 170), RED, 10, (20, 4, 6))
     tc(d, 1330, "in just two days", F("serif_bold", 54), CREAM, 5, (10, 20, 30))
@@ -76,6 +78,44 @@ def two_days(lt, dur, T):
         n = 16410030 * eio((lt - dur * 0.65) / 1.2)
         tc(d, 960, f"{n:,.0f}", F("sans_black", 96), DECO, 6, (10, 10, 10))
         tc(d, 1080, "shares traded on Tuesday", F("serif_bold", 50), CREAM)
+    return img
+
+
+def headline(lt, dur, T):
+    img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "THE NEXT DAY · OCTOBER 30, 1929", INK, GOLD, 40)
+    e = back(lt / 0.45); s = 0.6 + 0.4 * clamp(e)
+    pg = Image.new("RGBA", (880, 1000), (0, 0, 0, 0)); pd = ImageDraw.Draw(pg)
+    pd.rectangle((0, 0, 879, 999), fill=(244, 238, 222), outline=(60, 50, 40), width=6)
+    pd.text((440, 90), "VARIETY", font=F("serif_bold", 130), fill=INK, anchor="mm")
+    pd.line([(40, 170), (840, 170)], fill=INK, width=6); pd.line([(40, 182), (840, 182)], fill=INK, width=2)
+    pd.text((440, 300), "WALL ST.", font=F("sans_black", 150), fill=INK, anchor="mm")
+    pd.text((440, 450), "LAYS AN EGG", font=F("sans_black", 120), fill=RED, anchor="mm")
+    for k in range(7): pd.line([(60, 560 + k * 34), (380, 560 + k * 34)], fill=(150, 140, 120), width=6); pd.line([(500, 560 + k * 34), (820, 560 + k * 34)], fill=(150, 140, 120), width=6)
+    cx, cy = 440, 880; crack = clamp((lt - 1.0) / 0.5)   # the egg cracks
+    pd.ellipse((cx - 70, cy - 95, cx + 70, cy + 80), fill=(250, 248, 240), outline=(120, 110, 90), width=5)
+    if crack > 0:
+        pts = [(cx - 70, cy - 5), (cx - 40, cy - 30), (cx - 15, cy), (cx + 15, cy - 32), (cx + 40, cy - 2), (cx + 70, cy - 20)]
+        pd.line(pts[: 1 + int(crack * 5)], fill=(90, 80, 60), width=6)
+    pg = pg.rotate(-3, expand=True, resample=Image.BICUBIC); pg = pg.resize((int(pg.width * s), int(pg.height * s)))
+    img.paste(pg, ((W - pg.width) // 2, 840 - pg.height // 2), pg); d = ImageDraw.Draw(img, "RGBA")
+    if lt > dur * 0.6: e2 = back((lt - dur * 0.6) / 0.35); pill(d, 1350 + 10 * (1 - e2), "\"laying an egg\" = failing badly", CREAM, (150, 20, 34), 38)
+    return img
+
+
+def wiped(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "THE WALL STREET CRASH", CREAM, (150, 20, 34), 48)
+    v = 30 * eio((lt - 0.2) / 1.2)
+    tc(d, 330, f"${v:.0f} BILLION", F("sans_black", 140), RED, 8, (10, 10, 10))
+    tc(d, 500, "wiped out within weeks", F("serif_bold", 56), CREAM)
+    for i in range(14):   # money pours down a drain
+        u = (T * 0.7 + i / 14) % 1; x = 540 + math.sin(i * 2.1) * 260 * (1 - u)
+        d.rounded_rectangle((x - 60, 620 + 380 * u - 26, x + 60, 620 + 380 * u + 26), 6, fill=(140, 190, 140, int(255 * (1 - u))), outline=(40, 100, 50, int(255 * (1 - u))), width=3)
+    d.ellipse((400, 990, 680, 1060), fill=(10, 10, 12), outline=(90, 90, 96), width=8)
+    if lt > dur * 0.5:
+        e = back((lt - dur * 0.5) / 0.4)
+        card(d, (150, 1110, 930, 1330), [("IN TODAY'S MONEY", "sans_bold", 40, (150, 156, 170)), ("OVER $500 BILLION", "sans_black", 80, DECO + (int(255 * clamp(e)),))], fill=(20, 20, 26), outline=DECO)
     return img
 
 
@@ -235,7 +275,7 @@ S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
 spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=112, music_amp=0.06, gap=0.16,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
-        S("Did you know that in just two days in October nineteen twenty nine, the American stock market lost almost a quarter of its value? And that was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
+        S("Did you know that in just two days in October nineteen twenty nine, the American stock market lost almost a quarter of its value? It became known as the Wall Street Crash, and it was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
         S("To understand how it happened, we need to go back to the roaring twenties. The economy was booming, and stock prices had been climbing for years.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
         S("Ordinary people wanted in, and many didn't even use their own money. They bought on margin, putting down a small deposit, and borrowing the rest.", margin, tr="whip", sfx=[(1.6, "riser")]),
         S("On September third, nineteen twenty nine, the Dow hit a record high of three hundred and eighty one.", peak, tr="whip", sfx=[("END-0.9", "ding")]),
@@ -243,6 +283,8 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=112, music_amp
         S("Nine days later, the panic began. On Black Thursday, October twenty fourth, prices fell so fast that the ticker tape fell far behind.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
         S("That afternoon, top bankers pooled their money and bought shares to calm the market. It worked, but only for a few days.", bankers, tr="whip", sfx=[(0.6, "coin"), (1.0, "coin"), ("END-2.4", "thud")]),
         S("On Monday, the Dow fell almost thirteen percent. On Tuesday, it fell another twelve. A record sixteen million shares changed hands on Black Tuesday alone.", two_days, tr="flash", sfx=[(0.3, "boom"), (2.6, "boom")], shake=[(0.32, 0.3, 14), (2.62, 0.3, 14)]),
+        S("The next day, the entertainment paper Variety ran one of the most famous headlines in history: Wall Street lays an egg.", headline, tr="drop", sfx=[(0.2, "thud"), (1.1, "pop")]),
+        S("Within weeks, around thirty billion dollars in share value had been wiped out. That's over five hundred billion dollars in today's money.", wiped, tr="whip", sfx=[(0.3 + 0.12 * i, "tick") for i in range(10)] + [("END-2.6", "boom")]),
         S("So why did it fall so fast? Prices had raced far ahead of real company profits. When they started falling, lenders demanded their margin loans back. Investors were forced to sell, which pushed prices even lower, and triggered even more margin calls.", spiral, tr="whip", sfx=[(0.3 + 0.5 * i, "tick") for i in range(3)]),
         S("And the fall kept going. By July nineteen thirty two, the Dow was down almost ninety percent from its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
         S("A thousand dollars invested at the top was now worth around one hundred and eight dollars.", thousand, tr="whip", sfx=[(0.5 + 0.25 * i, "tick") for i in range(9)]),

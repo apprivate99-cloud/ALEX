@@ -154,7 +154,7 @@ def circle(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.12, bpm=100, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=100, music_amp=0.06, gap=0.16,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [146.8, 174.6, 220], [98, 123.5, 146.8]],
     scenes=[
         S("Did you know the first money wasn't coins at all? It was debt, scratched into clay over five thousand years ago.", hook, sfx=[(0.3, "pop")]),

@@ -59,7 +59,7 @@ def music(dur, bpm, chords, amp, drops=()):
     return (out * env * fade * amp).astype(np.float32)
 
 # ---------- captions show digits, the voice says words ----------
-CAP_MAP = [("one hundred and eight dollars", "$108"), ("A thousand dollars", "$1,000"), ("almost thirteen percent", "almost 13%"),
+CAP_MAP = [("around thirty billion dollars", "around $30 billion"), ("over five hundred billion dollars", "over $500 billion"), ("one hundred and eight dollars", "$108"), ("A thousand dollars", "$1,000"), ("almost thirteen percent", "almost 13%"),
     ("another twelve", "another 12%"), ("October twenty fourth", "October 24"), ("two thousand six hundred years", "2,600 years"), ("Around two hundred", "Around 200"), ("three hundred and eighty one", "381"), ("seventeen twenty nine", "1729"),
     ("sixteen ninety four", "1694"), ("nineteen twenty nine", "1929"), ("nineteen thirty two", "1932"), ("nineteen fifty four", "1954"),
     ("October twenty ninth", "October 29"), ("October fifteenth", "October 15"), ("September third", "September 3"),
