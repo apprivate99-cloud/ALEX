@@ -129,7 +129,7 @@ def end_ss(lt, dur, T):
     img = bg("burgundy").copy(); d = ImageDraw.Draw(img, "RGBA"); rays(d, T, (255, 200, 120, 14))
     e = back(lt / 0.4); tc(d, 250 + 30 * (1 - e), "EVEN GENIUSES", F("sans_black", 110), CREAM); tc(d, 380, "GET FOMO", F("sans_black", 150), GOLD)
     newton(d, 540, 1250, 1.0, T, "smug" if lt > 1 else "happy")
-    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 580 + 40 * (1 - e2), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 48)
+    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 580 + 40 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 48)
     return img
 
 ERMINE = (250, 248, 240)
@@ -199,7 +199,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=108, music_amp
         S("Newton reportedly lost around twenty thousand pounds, which would be millions in today's money.", loss, tr="whip"),
         S("He's often quoted as saying: I can calculate the motions of the heavenly bodies, but not the madness of people.", quote, tr="whip"),
         S("The funny thing is, there's no solid evidence that he ever actually said it.", lambda l, d_, T: quote(l, d_, T, 1), tr=None, sfx=[(0.5, "stamp")], shake=[(0.52, 0.25, 14)]),
-        S("The lesson? Even geniuses can fall for the fear of missing out. Follow for more money history.", end_ss, tr="zoom"),
+        S("The lesson? Even geniuses can fall for the fear of missing out. Would you have sold in April? Follow for more finance history.", end_ss, tr="zoom"),
     ])
 
 if __name__ == "__main__":

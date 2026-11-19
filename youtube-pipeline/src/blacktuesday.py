@@ -266,7 +266,7 @@ def lesson(lt, dur, T):
     tc(d, 230 + 20 * (1 - e), "BORROWING", F("sans_black", 120), CREAM); tc(d, 370, "TO BUY AT THE TOP", F("sans_black", 76), DECO)
     tc(d, 480, "turns a crash into", F("serif_bold", 56), CREAM); tc(d, 560, "A CATASTROPHE", F("sans_black", 96), RED)
     merchant(d, 540, 1250, 0.8, T, "sad", coat=(40, 40, 60))
-    if lt > dur * 0.55: e2 = back((lt - dur * 0.55) / 0.4); pill(d, 720 + 20 * (1 - e2), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 44)
+    if lt > dur * 0.55: e2 = back((lt - dur * 0.55) / 0.4); pill(d, 720 + 20 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 44)
     return img
 
 
@@ -290,7 +290,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=112, music_amp
         S("A thousand dollars invested at the top was now worth around one hundred and eight dollars.", thousand, tr="whip", sfx=[(0.5 + 0.25 * i, "tick") for i in range(9)]),
         S("Thousands of banks failed, and America sank into the Great Depression.", banks, tr="zoom", sfx=[(0.3 + 0.25 * i, "pop") for i in range(9)]),
         S("It took twenty five years, until nineteen fifty four, for the Dow to get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
-        S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe. Follow for more money history.", lesson, tr="zoom"),
+        S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe. Could it happen again? Follow for more finance history.", lesson, tr="zoom"),
     ])
 
 if __name__ == "__main__":

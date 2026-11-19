@@ -194,7 +194,7 @@ def twist(lt, dur, T):
     card(d, (190, 420, 890, 840), [("PAPER MONEY", "serif_bold", 74, INK), ("backed by", "serif", 52, INK), ("TRUST", "sans_black", 96, RED)], fill=(236, 226, 196), outline=(90, 70, 40))
     d.rounded_rectangle((214, 444, 866, 816), 12, outline=(90, 70, 40), width=3)
     tc(d, 900, "is how money works today", F("serif_bold", 56), CREAM)
-    if lt > dur * 0.6: e = back((lt - dur * 0.6) / 0.4); pill(d, 1060 + 20 * (1 - e), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 46)
+    if lt > dur * 0.6: e = back((lt - dur * 0.6) / 0.4); pill(d, 1060 + 20 * (1 - e), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 46)
     return img
 
 
@@ -217,7 +217,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp
         S("But there was a catch. The boom was fuelled by printing more and more paper money. And when investors tried to swap their paper for gold, the whole thing came apart.", chart_down, tr="whip", sfx=[("END-2.4", "boom")], shake=[(3.6, 0.4, 18)]),
         S("Prices crashed, angry crowds filled the streets, and by the end of the year, Law had fled France for good.", riots, tr="whip"),
         S("He died nearly broke, in Venice, in seventeen twenty nine.", venice, tr="whip"),
-        S("And yet, here's the twist. Law's big idea, paper money backed by trust instead of gold, is exactly how almost all money works today. Follow for more money history.", twist, tr="flash", sfx=[(-0.9, "riser")]),
+        S("And yet, here's the twist. Law's big idea, paper money backed by trust instead of gold, is exactly how almost all money works today. Would you have trusted John Law? Follow for more finance history.", twist, tr="flash", sfx=[(-0.9, "riser")]),
     ])
 
 if __name__ == "__main__":

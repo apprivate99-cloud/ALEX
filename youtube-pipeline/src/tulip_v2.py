@@ -80,7 +80,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=104, music_amp
         S("When historian Anne Goldgar searched the Dutch archives, she found only thirty seven people who had paid more than three hundred guilders for a bulb.",
           archive, tr="whip", sfx=[(0.5 + 0.15 * i, "pop") for i in range(0, 37, 3)]),
         S("There was no wave of ruin, and no economic collapse.", pamphlet, tr="whip", sfx=[(0.36, "stamp")], shake=[(0.38, 0.25, 16)]),
-        S("So the world's most famous bubble might itself have been a bit of a bubble. Follow for more money history.", ending, tr="zoom", sfx=[(2.4, "pop")]),
+        S("So the world's most famous bubble might itself have been a bit of a bubble. Would you have bought a tulip? Follow for more finance history.", ending, tr="zoom", sfx=[(2.4, "pop")]),
     ])
 
 if __name__ == "__main__":

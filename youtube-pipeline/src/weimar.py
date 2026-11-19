@@ -159,7 +159,7 @@ def end_w(lt, dur, T):
         if not 200 < ny < 1150: note(d, rng.uniform(0, W), ny, 0.7, a=60)
     e = back(lt / 0.4); tc(d, 380 + 30 * (1 - e), "MONEY", F("sans_black", 170), CREAM); tc(d, 560, "IS JUST", F("sans_black", 110), (150, 156, 170))
     tc(d, 690, "TRUST", F("sans_black", 220), GOLD)
-    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 1000 + 40 * (1 - e2), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 50)
+    if lt > dur * 0.5: e2 = back((lt - dur * 0.5) / 0.4); pill(d, 1000 + 40 * (1 - e2), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 50)
     return img
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
@@ -176,7 +176,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=96, music_amp=
         S("Banknotes became so worthless that children played with bundles of them as toys, and families fed them into the fire.", worthless, tr="whip"),
         S("By late nineteen twenty three, the mark was effectively worthless, and a lifetime of savings had been wiped out.", chart_w, tr="whip", sfx=[("END-1.8", "boom")], shake=[(3.5, 0.4, 18)]),
         S("Finally, in November nineteen twenty three, Germany launched a new currency called the Rentenmark, swapping one new mark for one trillion old ones. Remarkably, it worked.", renten, tr="whip", sfx=[(1.0, "pop"), ("END-1.6", "stamp")]),
-        S("The lesson? Money only works as long as people trust it. Follow for more money history.", end_w, tr="zoom"),
+        S("The lesson? Money only works as long as people trust it. Could it happen to your money? Follow for more finance history.", end_w, tr="zoom"),
     ])
 
 if __name__ == "__main__":

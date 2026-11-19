@@ -148,7 +148,7 @@ def circle(lt, dur, T):
     phone(d, 790, 760, 0.95, "£12,483.20")
     tc(d, 1070, "3500 BC", F("sans_black", 52), CREAM, x=290); tc(d, 1070, "TODAY", F("sans_black", 52), CREAM, x=790)
     tc(d, 680, "=", F("sans_black", 140), CREAM, x=540)
-    if lt > dur * 0.55: e = back((lt - dur * 0.55) / 0.4); pill(d, 1190 + 30 * (1 - e), "FOLLOW FOR MORE MONEY HISTORY", INK, GOLD, 46)
+    if lt > dur * 0.55: e = back((lt - dur * 0.55) / 0.4); pill(d, 1190 + 30 * (1 - e), "FOLLOW FOR MORE FINANCE HISTORY", INK, GOLD, 46)
     return img
 
 
@@ -169,7 +169,7 @@ spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=100, music_amp
         S("In ten twenty four, the government took over those receipts, and the world's first official paper money was born.", paper, tr="zoom", sfx=[(0.3, "riser")]),
         S("But it couldn't resist printing more and more of it, and over time, the notes became almost worthless. Sound familiar?", collapse, tr="whip", sfx=[("END-1.6", "thud")]),
         S("Today, most money isn't coins or paper at all. It's just numbers, stored in bank computers.", digital, tr="whip"),
-        S("Which means that after five thousand years, money has come full circle: a record of who owes what, just like those clay tablets. Follow for more money history.", circle, tr="zoom"),
+        S("Which means that after five thousand years, money has come full circle: a record of who owes what, just like those clay tablets. What will money look like next? Follow for more finance history.", circle, tr="zoom"),
     ])
 
 if __name__ == "__main__":

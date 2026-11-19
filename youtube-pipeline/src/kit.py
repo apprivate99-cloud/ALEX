@@ -483,7 +483,7 @@ def ending(lt, dur, T):
             al = int(255 * clamp(1 - u / 0.7)); d.ellipse((x - 8, y - 8, x + 8, y + 8), fill=(255, 240, 220, al))
         e = back(u / 0.35); tc(d, 240, "…WAS A BUBBLE?", F("serif_bold", 80), GOLD + (int(255 * clamp(e)),))
         e2 = back((u - 0.5) / 0.4)
-        if u > 0.5: pill(d, 400 + 40 * (1 - e2), "FOLLOW FOR MORE", INK, GOLD, 64); tc(d, 530, "MONEY HISTORY", F("sans_black", 90), CREAM, 8, (40, 10, 14))
+        if u > 0.5: pill(d, 400 + 40 * (1 - e2), "FOLLOW FOR MORE", INK, GOLD, 64); tc(d, 530, "FINANCE HISTORY", F("sans_black", 90), CREAM, 8, (40, 10, 14))
     return img
 
 def chrome(d, t, total):
