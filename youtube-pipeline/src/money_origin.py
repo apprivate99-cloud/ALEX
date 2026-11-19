@@ -3,6 +3,7 @@ import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
 import kit
 kit.ERA = "ancient"
+kit.COIN_SYM = ""
 
 
 def hook(lt, dur, T):
@@ -41,6 +42,8 @@ def mesopotamia(lt, dur, T):
     pr = draw_map(img, d, 42 - 2 * k, 35, 38 + 20 * k, T, hl=("IRQ",))
     x, y = pr(44.4, 33.3); d.ellipse((x - 16, y - 16, x + 16, y + 16), fill=RED, outline=CREAM, width=4)
     pill(d, 230, "MESOPOTAMIA · ~3500 BC", INK, GOLD, 46)
+    if lt > 0.5:
+        e = back((lt - 0.5) / 0.4); tablet(img, x + 170, y - 190, 0.3 * clamp(e) + 0.01, [], T); d = ImageDraw.Draw(img, "RGBA")
     tc(d, y + 40, "modern-day Iraq", F("sans_black", 44), CREAM, 6, (10, 20, 30), x=x)
     return img
 
@@ -79,6 +82,8 @@ def lydia(lt, dur, T):
     pr = draw_map(img, d, 30 - 2 * k, 39, 40 + 22 * k, T, hl=("TUR",))
     x, y = pr(28.0, 38.5); d.ellipse((x - 16, y - 16, x + 16, y + 16), fill=RED, outline=CREAM, width=4)
     pill(d, 230, "LYDIA · ~630 BC", INK, GOLD, 50)
+    if lt > 0.6:
+        e = back((lt - 0.6) / 0.4); lion_coin(d, x - 10, y - 170 - 10 * math.sin(T * 3), 80 * clamp(e) + 1)
     tc(d, y + 40, "modern-day Turkey", F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 240), W - 240))
     if lt > dur * 0.45:
         e = back((lt - dur * 0.45) / 0.4); pill(d, 330 + 30 * (1 - e), "THE WORLD'S FIRST COINS", CREAM, (150, 20, 34), 46)
@@ -149,13 +154,13 @@ def circle(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.32, bpm=100, music_amp=0.06, gap=0.12,
+spec = dict(theme=theme, voice=26, speed=1.12, bpm=100, music_amp=0.06, gap=0.16,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [146.8, 174.6, 220], [98, 123.5, 146.8]],
     scenes=[
-        S("Ask most people where money came from, and they'll tell you a neat little story. It's probably wrong.", hook, sfx=[(0.3, "pop")]),
-        S("The story goes like this: before money, people bartered, swapping a cow for a few sacks of grain, until someone invented coins to make life easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="zoom"),
+        S("Did you know the first money wasn't coins at all? It was debt, scratched into clay over five thousand years ago.", hook, sfx=[(0.3, "pop")]),
+        S("That's not the story most of us are taught. The usual version goes like this: before money, people bartered, swapping a cow for a few sacks of grain, until someone invented coins to make life easier.", lambda l, d_, T: barter(l, d_, T, 0), tr="zoom"),
         S("There's just one problem. Anthropologists have found almost no evidence of any society that actually ran on barter.", lambda l, d_, T: barter(l, d_, T, 1), tr=None, sfx=[(0.42, "stamp")], shake=[(0.44, 0.25, 14)]),
-        S("So where did money really begin? The trail leads back over five thousand years, to Mesopotamia,", mesopotamia, tr="whip"),
+        S("So where did money really begin? The trail leads back to ancient Mesopotamia,", mesopotamia, tr="whip"),
         S("where temple scribes pressed records of debts into clay tablets. Before there were coins, there were IOUs.", tablet_scene, tr="whip", sfx=[(0.4, "thud")]),
         S("Those debts were counted in barley, or in silver, weighed out in units called shekels.", shekel, tr="whip", sfx=[("END-2.0", "coin")]),
         S("Coins came much later. About two thousand six hundred years ago, the kingdom of Lydia, in what's now Turkey, began stamping the world's first ones.", lydia, tr="zoom", sfx=[("END-2.4", "ding")]),

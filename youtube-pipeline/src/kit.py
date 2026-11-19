@@ -191,9 +191,13 @@ def merchant(d, x, y, s, t, mood="happy", coat=COAT, hat=True, hat_off=(0, 0), l
     elif hat: _hat(d, {"1600s": "tall", "1700s": "tricorn", "1920s": "fedora", "ancient": "band", "song": "futou"}[era], hx, hyy, s)
 
 
-def coin(d, x, y, s, a=255):
+COIN_SYM = "ƒ"   # each video sets its currency: ƒ guilders, $ dollars, £ pounds, "" plain
+
+
+def coin(d, x, y, s, a=255, sym=None):
+    sym = COIN_SYM if sym is None else sym
     d.ellipse((x - 26 * s, y - 26 * s, x + 26 * s, y + 26 * s), fill=(200, 150, 50, a), outline=(140, 98, 30, a), width=max(int(3 * s), 1))
-    f = F("serif_bold", int(30 * s)); w = d.textlength("ƒ", font=f); d.text((x - w / 2, y - 20 * s), "ƒ", font=f, fill=(120, 80, 20, a))
+    if sym: d.text((x, y), sym, font=F("serif_bold", int(30 * s)), fill=(120, 80, 20, a), anchor="mm")
 
 def fit(d, text, name, size, maxw):
     """Largest font (<= size) for which text fits in maxw pixels."""
@@ -274,8 +278,11 @@ def map_a(lt, dur, T):
         p = ((lt * 0.35 + i * 0.27) % 1); ex, ey = pr(4.9 + (dl) * 0.4, 52.37 + (dla - 52.37) * 0.4)
         d.line([(ax, ay), (ex, ey)], fill=(255, 255, 255, 60), width=4)
         ship(d, ax + (ex - ax) * p, ay + (ey - ay) * p, 0.9, int(255 * min(1, 4 * (1 - p))))
-    d.ellipse((ax - 14, ay - 14, ax + 14, ay + 14), fill=RED, outline=CREAM, width=4)
-    pill(d, ay - 140, "DUTCH REPUBLIC", INK, GOLD, 44, x=min(max(ax, 260), W - 260))
+    from kit2 import map_face, coin_flow
+    for i, (dl, dla) in enumerate([(-30, 50), (30, 60)]):
+        ex, ey = pr(4.9 + dl * 0.4, 52.37 + (dla - 52.37) * 0.4); coin_flow(d, (ex, ey), (ax, ay), T + i, n=4, arc=-60)
+    nx_, ny_ = pr(5.6, 52.3); map_face(d, nx_, ny_, 0.35 + 0.5 * k, "happy", T)
+    pill(d, ay - 160, "DUTCH REPUBLIC", INK, GOLD, 44, x=min(max(ax, 260), W - 260))
     pill(d, 230, "THE 1630s", CREAM, (0, 0, 0, 150), 40)
     return img
 
@@ -294,6 +301,9 @@ def map_b(lt, dur, T):
         tc(d, y + 26, lab, F("sans_black", 40), CREAM, 6, (10, 20, 30), x=min(max(x, 220), W - 220))
     if lt > dur - 1.6:
         e = back((lt - (dur - 1.6)) / 0.4); pill(d, 260 + 30 * (1 - e), "★ STATUS SYMBOL ★", INK, GOLD, 52)
+        for i in range(8):
+            a = i * math.pi / 4 + T * 2; r = 100 + 20 * math.sin(T * 6 + i)
+            tc(d, ay - 90 + r * math.sin(a) * 0.6 - 30, "✦", F("sans_black", 40), (255, 230, 140), x=ax + r * math.cos(a))
     return img
 
 def still(lt, dur, T, phase):

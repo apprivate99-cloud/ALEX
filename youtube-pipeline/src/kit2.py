@@ -12,14 +12,19 @@ IRON, IRON_D = (110, 110, 116), (60, 60, 66)
 GREEN_UP, DECO = (70, 210, 120), (212, 175, 90)
 
 
-def card(d, box, items, fill=(250, 244, 226), outline=INK, pad=50):
-    """Draw a box and centre `items` [(text, font_name, size, colour)] inside it, shrinking text to fit."""
+def card(d, box, items, fill=(250, 244, 226), outline=INK, pad=50, vpad=46, gap=1.22):
+    """Box that hugs its text: items [(text, font_name, size, colour)] are centred exactly,
+    text shrinks to fit the width, and the box height shrinks to the content (centred on the
+    box's middle) so there's no empty space."""
     x0, y0, x1, y1 = box
-    d.rounded_rectangle(box, 20, fill=fill, outline=outline, width=5)
     fonts = [fit(d, t, n, sz, (x1 - x0) - 2 * pad) for t, n, sz, _ in items]
-    hs = [f.size * 1.25 for f in fonts]; y = y0 + ((y1 - y0) - sum(hs)) / 2
+    hs = [f.size * gap for f in fonts]; content = sum(hs)
+    cy = (y0 + y1) / 2; top = cy - content / 2 - vpad; bot = cy + content / 2 + vpad
+    d.rounded_rectangle((x0, top, x1, bot), 20, fill=fill, outline=outline, width=5)
+    y = cy - content / 2
     for (t, n, sz, c), f, h in zip(items, fonts, hs):
-        w = d.textlength(t, font=f); d.text(((x0 + x1 - w) / 2, y + (h - f.size * 1.15) / 2), t, font=f, fill=c); y += h
+        d.text(((x0 + x1) / 2, y + h / 2), t, font=f, fill=c, anchor="mm"); y += h
+    return top, bot
 
 
 def cow(d, x, y, s, t):
@@ -179,3 +184,72 @@ def deco_bg():
         d.line([(540, 1700), (540 + 2400 * math.cos(a0), 1700 + 2400 * math.sin(a0))], fill=(60, 50, 26), width=6)
     for k in range(3): d.arc((540 - 300 - k * 120, 1400 - 300 - k * 120, 540 + 300 + k * 120, 1400 + 300 + k * 120), 180, 360, fill=(90, 74, 36), width=6)
     return img
+
+
+# ---------- map animations ----------
+def map_face(d, x, y, s, mood, t, a=255):
+    """Cartoon face drawn straight onto a country. mood: happy, sad, shock, worried."""
+    ink = INK + (a,)
+    for sx in (-1, 1):
+        if mood == "happy":
+            d.arc((x + sx * 34 * s - 16 * s, y - 26 * s, x + sx * 34 * s + 16 * s, y - 2 * s), 200, 340, fill=ink, width=max(int(7 * s), 2))
+        else:
+            d.ellipse((x + sx * 34 * s - 11 * s, y - 26 * s, x + sx * 34 * s + 11 * s, y - 4 * s), fill=ink)
+            if mood in ("sad", "worried"):
+                d.line([(x + sx * 34 * s - 18 * s, y - 34 * s - sx * 8 * s), (x + sx * 34 * s + 16 * s, y - 34 * s + sx * 8 * s)], fill=ink, width=max(int(6 * s), 2))
+    if mood == "happy":
+        d.chord((x - 40 * s, y - 4 * s, x + 40 * s, y + 50 * s), 0, 180, fill=(120, 30, 40, a))
+    elif mood == "shock":
+        d.ellipse((x - 16 * s, y + 8 * s, x + 16 * s, y + 46 * s), fill=(120, 30, 40, a))
+    else:
+        d.arc((x - 34 * s, y + 14 * s, x + 34 * s, y + 60 * s), 200, 340, fill=ink, width=max(int(7 * s), 2))
+    if mood == "sad":  # falling tear
+        ty = y + ((t * 60) % 70) * s
+        d.ellipse((x + 40 * s, ty - 4 * s, x + 54 * s, ty + 16 * s), fill=(90, 160, 230, a))
+    if mood == "worried":  # sweat drop
+        d.ellipse((x + 62 * s, y - 50 * s, x + 76 * s, y - 28 * s), fill=(90, 160, 230, a))
+
+
+def coin_drain(d, x, y, t, n=10, spread=90, fall=420, a=255):
+    """Coins pouring down out of a point (money draining away)."""
+    for i in range(n):
+        u = (t * 0.8 + i / n) % 1
+        cx = x + math.sin(i * 2.3) * spread * (0.3 + u)
+        coin(d, cx, y + fall * u * u, 1.3, int(a * (1 - u)))
+
+
+def coin_flow(d, p0, p1, t, n=6, arc=-120, a=255):
+    """Coins travelling along a curve from p0 to p1 (money moving between places)."""
+    (x0, y0), (x1, y1) = p0, p1; cx, cy = (x0 + x1) / 2, min(y0, y1) + arc
+    for i in range(n):
+        u = (t * 0.45 + i / n) % 1
+        x = (1 - u) ** 2 * x0 + 2 * u * (1 - u) * cx + u * u * x1; y = (1 - u) ** 2 * y0 + 2 * u * (1 - u) * cy + u * u * y1
+        coin(d, x, y, 1.2, int(a * min(1, 4 * u, 4 * (1 - u))))
+
+
+def meter(d, cx, y, w, frac, label, col=RED):
+    """A labelled bar that fills up (debt, losses...)."""
+    d.rounded_rectangle((cx - w / 2, y, cx + w / 2, y + 56), 28, fill=(255, 255, 255, 230), outline=INK, width=4)
+    if frac > 0.02: d.rounded_rectangle((cx - w / 2 + 6, y + 6, cx - w / 2 + 6 + (w - 12) * min(frac, 1), y + 50), 22, fill=col)
+    tc(d, y + 64, label, F("sans_black", 40), CREAM, 6, (10, 20, 30), x=cx)
+
+
+def factory(d, x, y, s, t, smoking=True):
+    d.rectangle((x - 60 * s, y - 50 * s, x + 60 * s, y), fill=(90, 70, 60))
+    d.polygon([(x - 60 * s, y - 50 * s), (x - 30 * s, y - 80 * s), (x - 30 * s, y - 50 * s), (x, y - 80 * s), (x, y - 50 * s), (x + 30 * s, y - 80 * s), (x + 30 * s, y - 50 * s)], fill=(110, 86, 74))
+    d.rectangle((x + 34 * s, y - 130 * s, x + 54 * s, y - 50 * s), fill=(70, 56, 50))
+    if smoking:
+        for k in range(3):
+            u = (t * 0.6 + k / 3) % 1; r = (10 + 20 * u) * s
+            d.ellipse((x + 44 * s - r, y - 140 * s - 80 * u * s - r, x + 44 * s + r, y - 140 * s - 80 * u * s + r), fill=(200, 200, 200, int(200 * (1 - u))))
+
+
+def us_bank(d, x, y, s, closed=False):
+    d.polygon([(x - 150 * s, y - 220 * s), (x, y - 300 * s), (x + 150 * s, y - 220 * s)], fill=(214, 210, 200))
+    d.rectangle((x - 150 * s, y - 220 * s, x + 150 * s, y - 200 * s), fill=(190, 186, 176))
+    for k in range(5): d.rectangle((x - 130 * s + k * 60 * s, y - 200 * s, x - 106 * s + k * 60 * s, y - 30 * s), fill=(230, 226, 216))
+    d.rectangle((x - 160 * s, y - 30 * s, x + 160 * s, y), fill=(190, 186, 176))
+    tc(d, y - 255 * s, "BANK", F("serif_bold", int(36 * s)), INK, x=x)
+    if closed:
+        d.rounded_rectangle((x - 120 * s, y - 150 * s, x + 120 * s, y - 80 * s), 8, fill=(250, 250, 246), outline=RED, width=max(int(5 * s), 1))
+        tc(d, y - 140 * s, "CLOSED", F("sans_black", int(44 * s)), RED, x=x)

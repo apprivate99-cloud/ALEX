@@ -38,10 +38,20 @@ def tts(text, sid, speed=1.05, accent="gb"):
             kokoro=sherpa_onnx.OfflineTtsKokoroModelConfig(model=d + "/model.onnx", voices=d + "/voices.bin",
                 tokens=d + "/tokens.txt", data_dir=d + "/espeak-ng-data", dict_dir=d + "/dict",
                 lexicon=d + f"/lexicon-{accent}-en.txt," + EXTRA_LEX, lang="en-gb" if accent == "gb" else "en-us"), num_threads=4)))
-    a = _tts[accent].generate(text, sid=sid, speed=speed)
-    s = np.array(a.samples, dtype=np.float32)
-    nz = np.where(np.abs(s) > 0.01)[0]  # trim silence
-    return s[max(nz[0] - 600, 0): nz[-1] + 1200] if len(nz) else s
+    # Speak one sentence at a time: shorter inputs keep the voice's intonation natural,
+    # and real pauses between sentences stop it sounding like one long robotic run.
+    import re
+    parts = [p.strip() for p in re.split(r"(?<=[.?!:])\s+", text.strip()) if p.strip()]
+    out = []
+    for i, p in enumerate(parts):
+        a = _tts[accent].generate(p, sid=sid, speed=speed)
+        s = np.array(a.samples, dtype=np.float32)
+        nz = np.where(np.abs(s) > 0.01)[0]
+        if len(nz): s = s[max(nz[0] - 600, 0): nz[-1] + 1200]
+        out.append(s)
+        if i < len(parts) - 1:
+            out.append(np.zeros(int(SR * (0.32 if p.endswith(("?", "!")) else 0.24)), np.float32))
+    return np.concatenate(out) if out else np.zeros(1, np.float32)
 
 def text_center(d, y, txt, f, fill, stroke=0, sfill=None):
     w = d.textlength(txt, font=f)

@@ -2,7 +2,9 @@ import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit import *
 import kit
 kit.ERA = "1700s"
+kit.COIN_SYM = "£"
 from tulip_v2 import stamp_img, slam
+from kit2 import map_face
 WIG=(236, 232, 222); WIG_D=(196, 190, 176); NAVY=(16, 30, 60)
 
 def newton(d, x, y, s, t, mood="happy", look=0, arm=None):
@@ -37,6 +39,13 @@ def atlantic(lt, dur, T):
     pts = [((1 - u) ** 2 * lx + 2 * u * (1 - u) * cx + u * u * sx, (1 - u) ** 2 * ly + 2 * u * (1 - u) * cy + u * u * sy) for u in np.linspace(0, p, 40)]
     for i in range(0, len(pts) - 1, 2): d.line([pts[i], pts[i + 1]], fill=CREAM, width=8)
     ship(d, pts[-1][0], pts[-1][1], 1.2)
+    bx, by = pr(-1.8, 53.0); map_face(d, bx, by, 0.5, "happy" if lt < dur * 0.55 else "shock", T)
+    if lt > dur * 0.55:
+        for i in range(5):
+            x = 220 + i * 160; e = back((lt - dur * 0.55 - i * 0.12) / 0.3)
+            if e <= 0: continue
+            ship(d, x, 1000, 1.3)
+            if i > 0: d.line([(x - 50, 930), (x + 50, 1030)], fill=RED, width=12); d.line([(x + 50, 930), (x - 50, 1030)], fill=RED, width=12)
     for (x, y), lab in [((lx, ly), "LONDON"), ((sx, sy), "SOUTH AMERICA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 220), W - 220))
     pill(d, 230, "1720 · THE SOUTH SEA COMPANY", INK, GOLD, 40)
@@ -169,10 +178,10 @@ def hutcheson(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.32, bpm=108, music_amp=0.06, gap=0.12,
+spec = dict(theme=theme, voice=26, speed=1.12, bpm=108, music_amp=0.06, gap=0.16,
     chords=[[130.8, 164.8, 196], [110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8]],
     scenes=[
-        S("Isaac Newton, one of the smartest people who ever lived, lost a fortune on a single stock.", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
+        S("Did you know that Isaac Newton, one of the smartest people who ever lived, lost a fortune on a single stock?", hook, sfx=[(0.9, "pop"), ("END-1.9", "stamp")], shake=[(0.9, 0.2, 10)]),
         S("In seventeen twenty, everyone in London wanted shares in the South Sea Company. Even King George the First was its governor.", king, tr="zoom", sfx=[("END-2.2", "ding")]),
         S("It promised huge riches from trade with South America. But Spain allowed it just one trading ship a year.", atlantic, tr="whip", sfx=[("END-2.0", "thud")]),
         S("Real profits were tiny, but the hype was enormous, and insiders even bribed politicians to keep the price climbing.", hype, tr="whip", sfx=[("END-1.8", "riser")]),

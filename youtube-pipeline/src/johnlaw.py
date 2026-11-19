@@ -3,6 +3,7 @@ import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
 import kit
 kit.ERA = "1700s"
+kit.COIN_SYM = ""
 
 LAW_COAT, WIG_B, WIG_BD = (40, 50, 90), (120, 84, 50), (90, 60, 34)
 
@@ -73,7 +74,11 @@ def gambler(lt, dur, T):
 
 def france(lt, dur, T):
     img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA"); k = eio(lt / dur)
-    draw_map(img, d, 2.5, 46.5, 60 + 20 * k, T, hl=("FRA",))
+    pr = draw_map(img, d, 2.5, 46.5, 60 + 20 * k, T, hl=("FRA",))
+    fx, fy = pr(2.6, 46.9)
+    map_face(d, fx, fy, 2.4, "sad" if lt > 0.5 else "worried", T)
+    coin_drain(d, fx, fy + 140, T, n=12, spread=120, fall=330)
+    meter(d, 540, 1090, 640, eio(lt / dur), "DEBT")
     pill(d, 230, "FRANCE · 1715", INK, GOLD, 48)
     if lt > dur * 0.4:
         e = back((lt - dur * 0.4) / 0.4); d.rectangle((0, 1240, W, 1340), fill=(120, 16, 28, 235))
@@ -103,6 +108,8 @@ def louisiana(lt, dur, T):
     pts = [((1 - u) ** 2 * px + 2 * u * (1 - u) * cx + u * u * nx, (1 - u) ** 2 * py + 2 * u * (1 - u) * cy + u * u * ny) for u in np.linspace(0, max(p, 0.01), 40)]
     for i in range(0, len(pts) - 1, 2): d.line([pts[i], pts[i + 1]], fill=CREAM, width=8)
     ship(d, pts[-1][0], pts[-1][1], 1.1)
+    if p > 0.95: coin_flow(d, (nx, ny), (px, py), T, n=7, arc=-200)
+    fx, fy = pr(2.6, 46.6); map_face(d, fx, fy + 6, 0.55, "happy", T)
     for (x, y), lab in [((px, py), "PARIS"), ((nx, ny), "LOUISIANA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 200), W - 200))
     pill(d, 230, "THE MISSISSIPPI COMPANY", INK, GOLD, 48)
@@ -193,10 +200,10 @@ def twist(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.32, bpm=104, music_amp=0.06, gap=0.12,
+spec = dict(theme=theme, voice=26, speed=1.12, bpm=104, music_amp=0.06, gap=0.16,
     chords=[[110, 130.8, 164.8], [87.3, 110, 130.8], [98, 123.5, 146.8], [82.4, 103.8, 123.5]],
     scenes=[
-        S("In seventeen twenty, the man running France's entire economy was a Scottish gambler, who'd once been sentenced to death for murder.", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
+        S("Did you know that France once handed its entire economy to a Scottish gambler, who'd been sentenced to death for murder?", hook, sfx=[(0.6, "stamp")], shake=[(0.62, 0.25, 14)]),
         S("His name was John Law. In sixteen ninety four, he killed a man in a duel in London, and the court sentenced him to death.", duel, tr="zoom", sfx=[(1.0, "tick"), (1.4, "tick"), ("END-3.2", "thud")]),
         S("Somehow, he escaped from prison, and slipped away to mainland Europe.", prison, tr="whip", sfx=[(0.5, "thud"), (1.4, "stamp")]),
         S("For years he lived as a gambler, while studying money and banking. Then he found the perfect place to test his ideas.", gambler, tr="whip", sfx=[(0.5, "coin"), (1.2, "coin")]),

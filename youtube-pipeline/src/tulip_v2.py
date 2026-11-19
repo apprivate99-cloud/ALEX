@@ -58,10 +58,10 @@ def unpaid(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.32, bpm=104, music_amp=0.06, gap=0.12,
+spec = dict(theme=theme, voice=26, speed=1.12, bpm=104, music_amp=0.06, gap=0.16,
     chords=[[146.8, 174.6, 220], [116.5, 146.8, 174.6], [130.8, 164.8, 196], [110, 138.6, 164.8]],
     scenes=[
-        S("In sixteen thirty seven, a single tulip bulb could cost as much as a house.", lambda l, d_, T: scale_scene(l, d_, T, 0), sfx=[(0.78, "thud")], shake=[(0.78, 0.25, 14)]),
+        S("Did you know that in sixteen thirty seven, a single tulip bulb could cost as much as a house?", lambda l, d_, T: scale_scene(l, d_, T, 0), sfx=[(0.78, "thud")], shake=[(0.78, 0.25, 14)]),
         S("Then, almost overnight, nobody would buy one.", lambda l, d_, T: scale_scene(l, d_, T, 1), tr=None, sfx=[(0.1, "boom")], shake=[(0.1, 0.35, 18)], drop=[(0.05, 1.2)]),
         S("To understand why, we need to go back to the Dutch Republic, which was booming, with ships trading all across the world.", map_a, tr="zoom"),
         S("Tulips had arrived from the Ottoman Empire, and rare striped varieties became the ultimate status symbol for the rich.", map_b, tr=None, sfx=[(4.0, "ding")]),

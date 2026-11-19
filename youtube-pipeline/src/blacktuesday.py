@@ -3,6 +3,7 @@ import sys, os; sys.path.insert(0, os.path.dirname(__file__))
 from kit2 import *
 import kit
 kit.ERA = "1920s"
+kit.COIN_SYM = "$"
 
 # Dow Jones Industrial Average, approximate (x = year)
 DOW = [(1928.0, 200), (1928.5, 210), (1929.0, 300), (1929.67, 381), (1929.82, 230), (1929.87, 199), (1930.29, 294), (1930.95, 165), (1931.95, 78), (1932.52, 41)]
@@ -13,24 +14,118 @@ YLAB = [(100, "100"), (200, "200"), (300, "300"), (400, "400")]
 FISHER_COAT = (60, 60, 70)
 
 
-def hook(lt, dur, T):
+US_BBOX = (-130, -60, 20, 55)
+
+
+def us_map(img, d, T, mood, zoom=0.0):
+    pr = draw_map(img, d, -95 + 20 * zoom, 38 + 1 * zoom, 12.5 + 14 * zoom, T, hl=("USA",), cy=760, bbox=US_BBOX)
+    fx, fy = pr(-99, 39.5)
+    map_face(d, fx, fy, 2.0, mood, T)
+    return pr
+
+
+def hook_map(lt, dur, T):
+    img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA")
+    pr = us_map(img, d, T, "happy" if lt < 0.6 else "shock")
+    nx, ny = pr(-74.0, 40.7)
+    d.ellipse((nx - 16, ny - 16, nx + 16, ny + 16), fill=RED, outline=CREAM, width=4)
+    tc(d, ny - 80, "WALL STREET", F("sans_black", 38), CREAM, 5, (10, 20, 30), x=nx - 90)
+    if lt > 0.6: coin_drain(d, nx, ny + 40, T, n=12, spread=60, fall=380)
+    pill(d, 230, "OCTOBER 1929", INK, GOLD, 50)
+    v = 23 * eio((lt - 0.6) / (dur * 0.5))
+    tc(d, 1130, f"-{v:.0f}%", F("sans_black", 170), RED, 10, (20, 4, 6))
+    tc(d, 1330, "in just two days", F("serif_bold", 54), CREAM, 5, (10, 20, 30))
+    return img
+
+
+def fisher(lt, dur, T):
     img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
-    tc(d, 220, "OCTOBER 15, 1929", F("sans_black", 76), INK)
-    words = ["Stock prices have reached", "what looks like a", "permanently high", "plateau."]
-    lines = [("“", "serif_bold", 130, RED)] + [(ln, "serif_bold" if i >= 2 else "serif", 64, INK + (int(255 * eio((lt - 0.3 - i * 0.45) / 0.4)),)) for i, ln in enumerate(words)]
-    card(d, (80, 330, 1000, 900), lines + [("— Irving Fisher, economist", "serif", 38, (110, 80, 50, int(255 * eio((lt - 2.2) / 0.4))))])
+    pill(d, 230, "OCTOBER 15, 1929", CREAM, (40, 40, 40), 46)
+    words = ["Stock prices have reached", "what looks like a", "permanently high plateau."]
+    lines = [(ln, "serif_bold" if i == 2 else "serif", 60, INK + (int(255 * eio((lt - 0.3 - i * 0.5) / 0.4)),)) for i, ln in enumerate(words)]
+    card(d, (90, 360, 990, 760), [("“", "serif_bold", 120, RED)] + lines + [("Irving Fisher, economist", "sans_bold", 38, (110, 80, 50, int(255 * eio((lt - 1.8) / 0.4))))])
     merchant(d, 540, 1360, 0.8, T, "smug", coat=FISHER_COAT, hat=False, beard=False)
     hx, hy = 540, 1360 - 410 * 0.8 + math.sin(T * 5 + 540) * 4 * 0.8
     d.ellipse((hx - 46, hy - 26, hx - 4, hy + 8), outline=INK, width=5); d.ellipse((hx + 4, hy - 26, hx + 46, hy + 8), outline=INK, width=5)
     return img
 
 
-def two_weeks(lt, dur, T):
-    img = bg("chart").copy(); d = ImageDraw.Draw(img, "RGBA")
-    flip = lt > 0.5
-    calendar(d, 540, 600, 1.4, "OCT", 29 if flip else 15, 1929, RED if flip else (40, 120, 70))
-    if flip: tc(d, 300, "TWO WEEKS LATER", F("sans_black", 70), CREAM)
-    slam(img, stamp_img("CRASH", RED, 130, -6), lt, 0.9, 540, 1080)
+def bankers(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    pill(d, 230, "OCTOBER 24 · AFTERNOON", INK, GOLD, 44)
+    tc(d, 330, "Top bankers step in", F("serif_bold", 60), CREAM)
+    for i, (x, c) in enumerate([(220, (30, 30, 40)), (540, (40, 40, 60)), (860, (30, 40, 34))]):
+        merchant(d, x, 1240, 0.8, T + i, "smug", coat=c, arm=(x + 90, 820 + 20 * math.sin(T * 4 + i)))
+        coin(d, x + 90, 790 + 20 * math.sin(T * 4 + i), 1.6)
+    e = back((lt - dur * 0.55) / 0.4)
+    if lt > dur * 0.55: pill(d, 470 + 20 * (1 - e), "IT WORKED... FOR A FEW DAYS", CREAM, (150, 20, 34), 44)
+    return img
+
+
+def two_days(lt, dur, T):
+    img = deco_bg(); d = ImageDraw.Draw(img, "RGBA")
+    for i, (day, name, pct) in enumerate([(28, "MONDAY", 12.8), (29, "TUESDAY", 11.7)]):
+        st = 0.2 + i * dur * 0.32; e = back((lt - st) / 0.4)
+        if lt < st: continue
+        x = 300 + i * 480
+        calendar(d, x, 470, 0.95, "OCT", day, 1929)
+        tc(d, 660, f"BLACK {name}", F("sans_black", 52), RED, 5, (10, 10, 10), x=x)
+        tc(d, 740 + 20 * (1 - e), f"-{pct * clamp(e):.1f}%", F("sans_black", 100), CREAM + (int(255 * clamp(e)),), 6, (10, 10, 10), x=x)
+    if lt > dur * 0.65:
+        e = back((lt - dur * 0.65) / 0.4)
+        n = 16410030 * eio((lt - dur * 0.65) / 1.2)
+        tc(d, 960, f"{n:,.0f}", F("sans_black", 96), DECO, 6, (10, 10, 10))
+        tc(d, 1080, "shares traded on Tuesday", F("serif_bold", 50), CREAM)
+    return img
+
+
+def spiral(lt, dur, T):
+    img = bg("dark").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 220, "THE DEATH SPIRAL", F("sans_black", 96), RED)
+    cx, cy, R = 540, 820, 290
+    steps = ["PRICES FALL", "MARGIN CALLS", "FORCED SELLING"]
+    active = int((lt * 1.2) % 3)
+    for k in range(3):  # arrows around the circle
+        a0 = math.radians(-90 + k * 120 + 25); a1 = math.radians(-90 + (k + 1) * 120 - 25)
+        d.arc((cx - R, cy - R, cx + R, cy + R), math.degrees(a0), math.degrees(a1), fill=(200, 60, 60), width=14)
+        ax, ay = cx + R * math.cos(a1), cy + R * math.sin(a1); tang = a1 + math.pi / 2
+        d.polygon([(ax + 30 * math.cos(tang), ay + 30 * math.sin(tang)), (ax + 22 * math.cos(tang + 2.4), ay + 22 * math.sin(tang + 2.4)), (ax + 22 * math.cos(tang - 2.4), ay + 22 * math.sin(tang - 2.4))], fill=(200, 60, 60))
+    for k, lab in enumerate(steps):
+        a = math.radians(-90 + k * 120); x, y = cx + R * math.cos(a), cy + R * math.sin(a)
+        e = clamp((lt - 0.3 - k * 0.5) / 0.3)
+        if e <= 0: continue
+        on = k == active and lt > 1.8
+        pill(d, y - 38, lab, CREAM if on else INK, (200, 30, 40) if on else GOLD, 40, x=min(max(x, 230), W - 230))
+    v = 381 - 150 * eio(lt / dur)
+    tc(d, cy - 60, f"{v:,.0f}", F("sans_black", 110), RED, x=cx); tc(d, cy + 60, "DOW", F("sans_bold", 40), CREAM, x=cx)
+    return img
+
+
+def thousand(lt, dur, T):
+    img = bg("paper").copy(); d = ImageDraw.Draw(img, "RGBA")
+    tc(d, 220, "$1,000 INVESTED AT THE PEAK", fit(d, "$1,000 INVESTED AT THE PEAK", "sans_black", 70, W - 100), INK)
+    tc(d, 320, "was worth, by July 1932...", F("serif_bold", 54), (110, 80, 50))
+    k = eio((lt - 0.4) / (dur * 0.6)); val = 1000 - (1000 - 108) * k
+    n = max(1, int(round(10 * (1 - 0.9 * k))))
+    for i in range(n):  # stack of $100 notes shrinking
+        y = 1040 - i * 46
+        d.rounded_rectangle((360, y - 30, 720, y + 30), 8, fill=(140, 190, 140), outline=(40, 100, 50), width=4)
+        tc(d, y - 24, "$100", F("sans_black", 40), (30, 90, 40))
+    tc(d, 1160, f"${val:,.0f}", F("sans_black", 150), RED if k > 0.5 else (30, 110, 60))
+    return img
+
+
+def banks(lt, dur, T):
+    img = Image.new("RGB", (W, H), SEA); d = ImageDraw.Draw(img, "RGBA")
+    pr = us_map(img, d, T, "sad")
+    pill(d, 230, "THE GREAT DEPRESSION", CREAM, (150, 20, 34), 48)
+    spots = [(-74.0, 41.5), (-84.4, 33.7), (-87.6, 44.0), (-118.2, 34.0), (-122.4, 44.0), (-95.4, 29.8), (-111.9, 40.8)]
+    for i, (lon, lat) in enumerate(spots):
+        st = 0.3 + i * 0.25
+        if lt < st: continue
+        x, y = pr(lon, lat); e = back((lt - st) / 0.3)
+        us_bank(d, x, y + 40, 0.42 * clamp(e) + 0.01, closed=True)
+    tc(d, 1240, "thousands of banks failed", F("serif_bold", 56), CREAM, 5, (10, 20, 30))
     return img
 
 
@@ -118,7 +213,7 @@ def recovery(lt, dur, T):
     yr = int(1929 + 25 * eio(lt / (dur * 0.8))); tc(d, 330, str(yr), F("sans_black", 220), RED)
     n = yr - 1929
     for i in range(n):
-        x = 130 + (i % 9) * 92; y = 640 + (i // 9) * 110
+        row = i // 9; in_row = min(9, n - row * 9); x = (W - in_row * 92 + 16) / 2 + (i % 9) * 92; y = 640 + row * 110
         d.rounded_rectangle((x, y, x + 76, y + 86), 10, fill=(255, 255, 255), outline=INK, width=3); d.rectangle((x, y, x + 76, y + 22), fill=RED)
         lab = f"'{(1930 + i) % 100:02d}"; d.text((x + 38 - d.textlength(lab, font=F("sans_black", 30)) / 2, y + 34), lab, font=F("sans_black", 30), fill=INK)
     if lt > dur * 0.8: e = back((lt - dur * 0.8) / 0.3); pill(d, 1020 + 20 * (1 - e), "25 YEARS", CREAM, (150, 20, 34), 60)
@@ -137,19 +232,22 @@ def lesson(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.32, bpm=112, music_amp=0.06, gap=0.12,
+spec = dict(theme=theme, voice=26, speed=1.12, bpm=112, music_amp=0.06, gap=0.16,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
-        S("On October fifteenth, nineteen twenty nine, one of America's most famous economists made a bold prediction. Stock prices, he said, had reached what looks like a permanently high plateau.", hook),
-        S("Two weeks later, the market crashed.", two_weeks, tr="flash", sfx=[(0.5, "pop"), (0.9, "boom")], shake=[(0.92, 0.4, 20)], drop=[(0.85, 2.0)]),
-        S("To understand why, rewind to the roaring twenties. The economy was booming, stock prices kept climbing, and ordinary people rushed to get a piece of the action.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
-        S("Many didn't even use their own money. They bought on margin, paying a small part of the price, and borrowing the rest.", margin, tr="whip", sfx=[(1.4, "riser")]),
-        S("On September third, nineteen twenty nine, the Dow hit a record of three hundred and eighty one. It looked like the party would never end.", peak, tr="whip", sfx=[("END-2.2", "ding")]),
-        S("Then, in late October, the selling started. On Black Thursday, prices fell so fast that the ticker tape couldn't keep up.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
-        S("Five days later came Black Tuesday, October twenty ninth. A record sixteen million shares changed hands in a single day.", tuesday, tr="flash", sfx=[(0.3, "boom")], shake=[(0.32, 0.4, 18)]),
-        S("For people who'd bought with borrowed money, it was a disaster. Their lenders demanded to be repaid, and many were wiped out.", margin_call, tr="whip", sfx=[("END-1.6", "stamp")]),
-        S("And the fall didn't stop. By July nineteen thirty two, the Dow had sunk to just forty one, almost ninety percent below its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
-        S("It would take twenty five years, until nineteen fifty four, for the Dow to finally get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
+        S("Did you know that in just two days in October nineteen twenty nine, the American stock market lost almost a quarter of its value? And that was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),
+        S("To understand how it happened, we need to go back to the roaring twenties. The economy was booming, and stock prices had been climbing for years.", roaring, tr="zoom", sfx=[(0.4 + 0.35 * i, "coin") for i in range(5)]),
+        S("Ordinary people wanted in, and many didn't even use their own money. They bought on margin, putting down a small deposit, and borrowing the rest.", margin, tr="whip", sfx=[(1.6, "riser")]),
+        S("On September third, nineteen twenty nine, the Dow hit a record high of three hundred and eighty one.", peak, tr="whip", sfx=[("END-0.9", "ding")]),
+        S("Even the experts were convinced. In mid October, the famous economist Irving Fisher said stocks had reached what looks like a permanently high plateau.", fisher, tr="whip"),
+        S("Nine days later, the panic began. On Black Thursday, October twenty fourth, prices fell so fast that the ticker tape fell far behind.", thursday, tr="whip", sfx=[(0.6 + 0.2 * i, "tick") for i in range(16)]),
+        S("That afternoon, top bankers pooled their money and bought shares to calm the market. It worked, but only for a few days.", bankers, tr="whip", sfx=[(0.6, "coin"), (1.0, "coin"), ("END-2.4", "thud")]),
+        S("On Monday, the Dow fell almost thirteen percent. On Tuesday, it fell another twelve. A record sixteen million shares changed hands on Black Tuesday alone.", two_days, tr="flash", sfx=[(0.3, "boom"), (2.6, "boom")], shake=[(0.32, 0.3, 14), (2.62, 0.3, 14)]),
+        S("So why did it fall so fast? Prices had raced far ahead of real company profits. When they started falling, lenders demanded their margin loans back. Investors were forced to sell, which pushed prices even lower, and triggered even more margin calls.", spiral, tr="whip", sfx=[(0.3 + 0.5 * i, "tick") for i in range(3)]),
+        S("And the fall kept going. By July nineteen thirty two, the Dow was down almost ninety percent from its peak.", slide, tr="whip", sfx=[("END-1.0", "thud")]),
+        S("A thousand dollars invested at the top was now worth around one hundred and eight dollars.", thousand, tr="whip", sfx=[(0.5 + 0.25 * i, "tick") for i in range(9)]),
+        S("Thousands of banks failed, and America sank into the Great Depression.", banks, tr="zoom", sfx=[(0.3 + 0.25 * i, "pop") for i in range(9)]),
+        S("It took twenty five years, until nineteen fifty four, for the Dow to get back to its old high.", recovery, tr="whip", sfx=[(0.3 + 0.1 * i, "tick") for i in range(25)]),
         S("The lesson? Borrowing to buy at the top can turn a crash into a catastrophe. Follow for more money history.", lesson, tr="zoom"),
     ])
 
