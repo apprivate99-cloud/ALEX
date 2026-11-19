@@ -272,7 +272,7 @@ def lesson(lt, dur, T):
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)
 S = lambda say, draw, **kw: dict(say=say, draw=draw, **kw)
-spec = dict(theme=theme, voice=26, speed=1.08, one_take=True, bpm=112, music_amp=0.06, gap=0.16,
+spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=112, music_amp=0.06, gap=0.06,
     chords=[[110, 138.6, 164.8], [123.5, 146.8, 185], [98, 123.5, 146.8], [110, 130.8, 164.8]],
     scenes=[
         S("Did you know the American stock market once lost almost a quarter of its value in just two days? It happened in October nineteen twenty nine. It became known as the Wall Street Crash, and it was only the beginning.", hook_map, sfx=[(0.6, "boom")], shake=[(0.62, 0.4, 18)]),

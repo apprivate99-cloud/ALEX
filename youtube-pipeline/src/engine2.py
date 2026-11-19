@@ -82,7 +82,7 @@ def render(spec, out_path):
     timeline, t0 = [], 0.25
     for sc in spec["scenes"]:
         if spec.get("one_take"):
-            a, spans = tts_scene(sc["say"], spec["voice"], spec.get("speed", 1.08))
+            a, spans = tts_scene(sc["say"], spec["voice"], spec.get("speed", 1.08), breath=spec.get("breath", 0.14))
         else:
             a = tts(sc["say"], spec["voice"], spec.get("speed", 1.0)); spans = None
         dur = len(a) / SR; sc["_spans"] = spans
