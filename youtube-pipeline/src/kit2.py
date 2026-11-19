@@ -245,6 +245,7 @@ def factory(d, x, y, s, t, smoking=True):
 
 
 def us_bank(d, x, y, s, closed=False):
+    if s < 0.08: return  # too small to draw yet (avoids zero-size fonts)
     d.polygon([(x - 150 * s, y - 220 * s), (x, y - 300 * s), (x + 150 * s, y - 220 * s)], fill=(214, 210, 200))
     d.rectangle((x - 150 * s, y - 220 * s, x + 150 * s, y - 200 * s), fill=(190, 186, 176))
     for k in range(5): d.rectangle((x - 130 * s + k * 60 * s, y - 200 * s, x - 106 * s + k * 60 * s, y - 30 * s), fill=(230, 226, 216))

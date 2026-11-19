@@ -42,10 +42,10 @@ def atlantic(lt, dur, T):
     bx, by = pr(-1.8, 53.0); map_face(d, bx, by, 0.5, "happy" if lt < dur * 0.55 else "shock", T)
     if lt > dur * 0.55:
         for i in range(5):
-            x = 220 + i * 160; e = back((lt - dur * 0.55 - i * 0.12) / 0.3)
+            x = 470 + i * 125; e = back((lt - dur * 0.55 - i * 0.12) / 0.3)
             if e <= 0: continue
-            ship(d, x, 1000, 1.3)
-            if i > 0: d.line([(x - 50, 930), (x + 50, 1030)], fill=RED, width=12); d.line([(x + 50, 930), (x - 50, 1030)], fill=RED, width=12)
+            ship(d, x, 1190, 1.0)
+            if i > 0: d.line([(x - 40, 1130), (x + 40, 1210)], fill=RED, width=10); d.line([(x + 40, 1130), (x - 40, 1210)], fill=RED, width=10)
     for (x, y), lab in [((lx, ly), "LONDON"), ((sx, sy), "SOUTH AMERICA")]:
         d.ellipse((x - 14, y - 14, x + 14, y + 14), fill=RED, outline=CREAM, width=4); tc(d, y + 26, lab, F("sans_black", 44), CREAM, 6, (10, 20, 30), x=min(max(x, 220), W - 220))
     pill(d, 230, "1720 · THE SOUTH SEA COMPANY", INK, GOLD, 40)
