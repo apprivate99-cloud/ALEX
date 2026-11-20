@@ -6,3 +6,4 @@ src/*.wav
 src/*.log
 src/*.png
 src/*.mp4
+src/*_timings.txt
