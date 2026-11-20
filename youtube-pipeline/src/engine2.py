@@ -70,7 +70,7 @@ CAP_MAP = [("around thirty billion dollars", "around $30 billion"), ("over five 
     ("more than thirty years", "more than 30 years"), ("sixteen thirty seven", "1637"), ("sixteen thirty six", "1636"),
     ("nineteen fourteen", "1914"), ("nineteen twenty three", "1923"), ("seventeen twenty", "1720"),
     ("four point two trillion", "4.2 trillion"), ("four point two", "4.2"), ("one trillion", "1 trillion"),
-    ("twenty thousand pounds", "£20,000"), ("a thousand pounds", "£1,000"), ("one US dollar", "$1"), ("World War One", "WW1")]
+    ("twenty thousand pounds", "£20,000"), ("a thousand pounds", "£1,000"), ("one American dollar", "$1"), ("one US dollar", "$1"), ("World War One", "WW1")]
 def cap_text(s):
     for a, b in CAP_MAP: s = s.replace(a, b).replace(a[0].upper() + a[1:], b)
     return s

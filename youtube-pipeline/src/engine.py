@@ -29,6 +29,9 @@ def check_words(texts, accent="gb"):
         known |= {l.split(" ", 1)[0] for l in open(p, encoding="utf-8")}
     missing = sorted({w.lower() for t in texts for w in re.findall(r"[A-Za-z][A-Za-z'\-]*", t)} - known)
     if missing: raise SystemExit(f"Add pronunciations to lexicon-extra.txt for: {missing}")
+    # all-caps abbreviations (US, UK, ERM...) get read as words ("us"), so spell them out in the script
+    caps = sorted({w.strip(".,?!:;'\"") for t in texts for w in t.split() if len(w.strip(".,?!:;'\"")) >= 2 and w.strip(".,?!:;'\"").isupper()})
+    if caps: raise SystemExit(f"Spell out these abbreviations so the voice says them properly: {caps}")
 VOICE_V1 = os.path.join(os.path.dirname(__file__), "..", "voices", "kokoro-multi-lang-v1_0")
 def tts(text, sid, speed=1.05, accent="gb"):
     """Kokoro v1.0 with a proper British or American pronunciation lexicon."""

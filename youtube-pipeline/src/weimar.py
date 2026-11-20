@@ -200,7 +200,7 @@ spec = dict(theme=theme, voice=25, speed=1.18, one_take=True, breath=0.0, bpm=96
     scenes=[
         S("Did you know some Germans once burned banknotes in their stoves?", stove_hook, sfx=[(0.4, "whoosh")]),
         S("In nineteen twenty three, their money was worth less than the paper it was printed on.", paper_vs_note, tr="whip", sfx=[("END-2.6", "stamp")]),
-        S("Just nine years earlier, in nineteen fourteen, one US dollar was worth four point two German marks.", lambda l, d_, T: hook(l, d_, T, 0), tr="zoom", sfx=[(0.3, "coin")]),
+        S("Just nine years earlier, in nineteen fourteen, one American dollar was worth four point two German marks.", lambda l, d_, T: hook(l, d_, T, 0), tr="zoom", sfx=[(0.3, "coin")]),
         S("By late nineteen twenty three, that same dollar was worth four point two trillion.", lambda l, d_, T: hook(l, d_, T, 1), tr="flash", sfx=[(0.3 + 0.12 * i, "tick") for i in range(12)] + [("END-0.2", "boom")], shake=[(2.0, 0.4, 16)]),
         S("So how did this happen? After World War One, Germany owed enormous reparations.", lambda l, d_, T: ruhr(l, d_, T, 0), tr="zoom"),
         S("Then, in nineteen twenty three, France and Belgium occupied the Ruhr, Germany's industrial heartland.", lambda l, d_, T: ruhr(l, d_, T, 1), tr=None, sfx=[(0.6, "thud")]),

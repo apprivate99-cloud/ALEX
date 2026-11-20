@@ -124,8 +124,8 @@ details (filed in 1988).
 | 5 | By late two thousand and eight, prices were doubling roughly every day. | Calendar with a "×2" stamp on each day |
 | 6 | Shops changed their prices several times a day, and people rushed to spend their money before it lost value. | Shopkeeper re-pricing; queue |
 | 7 | The central bank kept adding zeros to its notes, until it printed the one hundred trillion dollar note. | Zeros flying onto the note one by one |
-| 8 | By April two thousand and nine, Zimbabwe gave up on its own currency, and people switched to US dollars and South African rand. | Zimbabwe dollar note fading; $ and R coins arriving |
-| 9 | Years later, the government offered to swap old notes for US dollars. The hundred trillion note was worth about forty cents. | Exchange counter: note → "$0.40" |
+| 8 | By April two thousand and nine, Zimbabwe gave up on its own currency, and people switched to American dollars and South African rand. | Zimbabwe dollar note fading; $ and R coins arriving |
+| 9 | Years later, the government offered to swap old notes for American dollars. The hundred trillion note was worth about forty cents. | Exchange counter: note → "$0.40" |
 | 10 | Today, the notes sell to collectors for more than they were ever worth as money. | Note in a picture frame with a price tag |
 | 11 | The lesson? When a government prints money to pay its bills, prices can spiral out of control. | Lesson card |
 | 12 | Could it happen to your money? Follow for more finance history. | Question end card |
