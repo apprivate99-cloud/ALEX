@@ -130,7 +130,24 @@ def render(spec, out_path):
     check_words([sc["say"] for sc in spec["scenes"]])
     gapd = spec.get("gap", 0.22)
     timeline, t0 = [], 0.25
-    for sc in spec["scenes"]:
+    if spec.get("narration"):
+        # A supplied recording (e.g. ElevenLabs): cut it at the start of each scene's first word.
+        import soundfile as _sf
+        rec, rsr = _sf.read(spec["narration"], dtype="float32")
+        if rec.ndim > 1: rec = rec.mean(1)
+        if rsr != SR: rec = np.interp(np.linspace(0, len(rec) - 1, int(len(rec) * SR / rsr)), np.arange(len(rec)), rec).astype(np.float32)
+        words, first = [], []
+        for sc in spec["scenes"]:
+            first.append(len(words)); words += sc["say"].split()
+        wt = word_times(rec, words)
+        cuts = [0] + [max(int((wt[i] - 0.08) * SR), 0) for i in first[1:]] + [len(rec)]
+        for k, sc in enumerate(spec["scenes"]):
+            a0, a1 = cuts[k], max(cuts[k + 1], cuts[k] + 1)
+            seg = rec[a0:a1]; base = a0 / SR
+            nw = len(sc["say"].split()); sc["_wt"] = (sc["say"].split(), [max(t - base, 0) for t in wt[first[k]: first[k] + nw]])
+            sc["_spans"] = [(0, len(seg) / SR)] * len(split_sentences(sc["say"]))
+            timeline.append(dict(st=t0, dur=len(seg) / SR, sc=sc, audio=seg)); t0 += len(seg) / SR
+    for sc in ([] if spec.get("narration") else spec["scenes"]):
         if spec.get("one_take"):
             a, spans = tts_scene(sc["say"], spec["voice"], spec.get("speed", 1.08), breath=spec.get("breath", 0.14))
         else:
