@@ -217,3 +217,104 @@ if __name__ == "__main__":
     wm = Image.new("RGBA", (1800, 300), (0, 0, 0, 0)); wd = ImageDraw.Draw(wm)
     wordmark(wd, 20, 220, 170, col1=INK, col2=(184, 128, 40), shadow=(0, 0, 0, 0)); wm.save(os.path.join(OUT, "wordmark_light.png"))
     print("ok")
+
+
+# ---------------- banner v2: "timeline of money" (no logo) ----------------
+NAVY_T, NAVY_B = (16, 24, 44), (6, 8, 16)
+SKY = (24, 30, 48)
+
+
+def glow_line(img, pts, col, width, blur):
+    layer = Image.new("RGBA", img.size, (0, 0, 0, 0)); ImageDraw.Draw(layer).line(pts, fill=col + (255,), width=width * 3, joint="curve")
+    img.alpha_composite(layer.filter(ImageFilter.GaussianBlur(blur)))
+    ImageDraw.Draw(img).line(pts, fill=col + (255,), width=width, joint="curve")
+
+
+def skyline(d, base, k=0.5):
+    rng = np.random.default_rng(3); win = (240, 200, 110)
+    x = 0
+    # Dutch gabled houses (1600s)
+    while x < 620:
+        w = rng.integers(70, 110); h = int(rng.integers(170, 260) * k)
+        d.rectangle((x, base - h, x + w, base), fill=SKY)
+        for j in range(4):
+            sw = w / 2 - j * w / 9
+            d.rectangle((x + w / 2 - sw, base - h - (j + 1) * 26 * k, x + w / 2 + sw, base - h - j * 26 * k), fill=SKY)
+        for r in range(int(3 * k)):
+            for c in range(2):
+                if rng.random() < 0.6: d.rectangle((x + 14 + c * (w - 44), base - h + 30 + r * 52, x + 30 + c * (w - 44), base - h + 54 + r * 52), fill=win)
+        x += w + 4
+    # classical bank with columns (1700s)
+    bx, bh = 700, 300 * k / 0.5 * 0.5; d.polygon([(bx, base - bh), (bx + 210, base - bh - 90), (bx + 420, base - bh)], fill=SKY)
+    d.rectangle((bx, base - bh, bx + 420, base - bh + 26), fill=SKY); d.rectangle((bx - 10, base - 30, bx + 430, base), fill=SKY)
+    for j in range(6): d.rectangle((bx + 20 + j * 70, base - bh + 26, bx + 48 + j * 70, base - 30), fill=SKY)
+    # 1920s skyscrapers
+    for sx, sw, sh in ((1180, 120, int(520 * k)), (1320, 160, int(700 * k)), (1500, 110, int(460 * k)), (1630, 140, int(600 * k))):
+        d.rectangle((sx, base - sh, sx + sw, base), fill=SKY)
+        for j in range(3):  # stepped deco top
+            d.rectangle((sx + 12 * (j + 1), base - sh - 40 * (j + 1), sx + sw - 12 * (j + 1), base - sh - 40 * j), fill=SKY)
+        d.line([(sx + sw / 2, base - sh - 120), (sx + sw / 2, base - sh - 220)], fill=SKY, width=8)
+        for r in range(int(sh / 46)):
+            for c in range(int(sw / 34)):
+                if rng.random() < 0.45: d.rectangle((sx + 10 + c * 34, base - sh + 24 + r * 46, sx + 24 + c * 34, base - sh + 44 + r * 46), fill=win)
+    # modern glass towers
+    for mx, mw, mh in ((1860, 150, int(640 * k)), (2040, 120, int(520 * k)), (2190, 180, int(760 * k)), (2400, 160, int(480 * k))):
+        d.polygon([(mx, base), (mx, base - mh + 60), (mx + mw, base - mh), (mx + mw, base)], fill=SKY)
+        for r in range(int(mh / 30)): d.line([(mx + 8, base - 20 - r * 30), (mx + mw - 8, base - 20 - r * 30 - 6)], fill=(60, 80, 120), width=3)
+    d.rectangle((0, base, BW, BH), fill=SKY)
+
+
+def banner_v2():
+    img = radial((BW, BH), NAVY_T, NAVY_B, cy=0.42, r=0.7).convert("RGBA")
+    lay = Image.new("RGBA", img.size, (0, 0, 0, 0)); d = ImageDraw.Draw(lay)
+    for x in range(0, BW, 80): d.line([(x, 0), (x, BH)], fill=(255, 255, 255, 14), width=2)       # chart-paper grid
+    for y in range(0, BH, 80): d.line([(0, y), (BW, y)], fill=(255, 255, 255, 14), width=2)
+    rng = np.random.default_rng(11)
+    # faint candlesticks drifting upward behind everything
+    v = 1050
+    for i in range(48):
+        x = 30 + i * 53; o = v; v = v - rng.normal(8, 30); c = v
+        hi, lo = min(o, c) - rng.uniform(10, 40), max(o, c) + rng.uniform(10, 40)
+        col = (70, 210, 120, 50) if c < o else (214, 60, 70, 50)
+        d.line([(x, hi), (x, lo)], fill=col, width=4); d.rectangle((x - 12, min(o, c), x + 12, max(o, c) + 2), fill=col)
+    img.alpha_composite(lay)
+    # the main rising market line with a glow, through history's booms and busts
+    pts = []
+    for i in range(400):
+        u = i / 399; x = u * BW
+        y = 1020 - 700 * u ** 1.15 + 50 * math.sin(u * 23) * (1 - u * 0.5) + 24 * math.sin(u * 61)
+        for cu, depth, wdt in ((0.27, 150, 0.02), (0.47, 120, 0.02), (0.73, 210, 0.025)):   # crashes: 1637, 1720, 1929
+            y += depth * math.exp(-((u - cu) / wdt) ** 2) * (1 if u > cu else 0.35)
+        pts.append((x, y))
+    area = Image.new("RGBA", img.size, (0, 0, 0, 0)); ImageDraw.Draw(area).polygon(pts + [(BW, BH), (0, BH)], fill=(232, 178, 72, 26))
+    img.alpha_composite(area)
+    glow_line(img, pts, (246, 200, 96), 8, 14)
+    d = ImageDraw.Draw(img, "RGBA")
+    skyline(d, 1440, 0.62)
+    # era objects at the edges of the desktop band
+    from kit2 import tablet, lion_coin, phone, ticker, jiaozi
+    tablet(img, 230, 720, 0.42, [], 0.4); d = ImageDraw.Draw(img, "RGBA")
+    lion_coin(d, 410, 830, 70)
+    jiaozi(img, 2140, 690, 0.42, 0.3); d = ImageDraw.Draw(img, "RGBA")
+    phone(d, 2350, 740, 0.62, "$1,929.00")
+    # floating coins and notes, kept out of the centre
+    for (x, y, r, sym) in ((150, 300, 70, "$"), (420, 180, 50, "£"), (640, 360, 40, "ƒ"), (2420, 240, 66, "$"), (2160, 140, 46, "£"), (1950, 330, 38, "¥")):
+        gold_coin(img, x, y, r, monogram=sym, shadow=False)
+    d = ImageDraw.Draw(img, "RGBA")
+    # centre: name + tagline, with a soft dark plate for legibility
+    x0, y0, x1, y1 = SAFE; cx = BW // 2; cy = (y0 + y1) // 2
+    plate = Image.new("RGBA", img.size, (0, 0, 0, 0)); ImageDraw.Draw(plate).rounded_rectangle((x0 + 80, y0 + 20, x1 - 80, y1 - 20), 60, fill=(6, 8, 16, 170))
+    img.alpha_composite(plate.filter(ImageFilter.GaussianBlur(30))); d = ImageDraw.Draw(img, "RGBA")
+    f1, f2 = F("serif_bold", 170), F("sans_black", 162)
+    w1, w2 = d.textlength("DOOLIAN ", font=f1), d.textlength("DOLLARS", font=f2); sx = cx - (w1 + w2) / 2
+    for dx, dy, col1, col2 in ((6, 8, (0, 0, 0), (0, 0, 0)), (0, 0, CREAM, GOLD_L)):
+        d.text((sx + dx, cy + 30 + dy), "DOOLIAN", font=f1, fill=col1, anchor="ls"); d.text((sx + w1 + dx, cy + 30 + dy), "DOLLARS", font=f2, fill=col2, anchor="ls")
+    d.line([(cx - 520, cy + 62), (cx - 40, cy + 62)], fill=GOLD_M, width=3); d.line([(cx + 40, cy + 62), (cx + 520, cy + 62)], fill=GOLD_M, width=3)
+    d.polygon([(cx, cy + 50), (cx + 12, cy + 62), (cx, cy + 74), (cx - 12, cy + 62)], fill=GOLD_M)
+    d.text((cx, cy + 122), "THE WILDEST STORIES IN THE HISTORY OF MONEY", font=F("sans_bold", 46), fill=(240, 220, 170), anchor="mm")
+    d.text((cx, cy - 130), "1637   ·   1720   ·   1923   ·   1929", font=F("sans_bold", 40), fill=(200, 170, 100), anchor="mm")
+    return img.convert("RGB")
+
+
+if __name__ == "__main__" and "v2" in sys.argv:
+    b = banner_v2(); b.save(os.path.join(OUT, "banner_timeline.png")); banner_preview(b).save(os.path.join(OUT, "banner_timeline_zones.png")); print("v2 ok")
