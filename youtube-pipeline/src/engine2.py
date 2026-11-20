@@ -155,7 +155,7 @@ def render(spec, out_path):
     else:
         mus = music(n / SR, spec.get("bpm", 100), spec["chords"], spec.get("music_amp", 0.05), drops)
     mus = np.pad(mus, (0, max(0, n - len(mus))))[:n]  # guard float rounding
-    mix = voice + fx * 0.55 + mus
+    mix = (0 if spec.get("no_voice") else voice) + fx * 0.55 + mus
     wav = out_path + ".wav"; sf.write(wav, np.clip(mix, -1, 1), SR)
 
     caps = []
@@ -228,7 +228,7 @@ def render(spec, out_path):
                 c = prev_last.copy(); c.paste(img, (0, int(-H * (1 - e)))); img = c
         d = ImageDraw.Draw(img, "RGBA")
         th["chrome"](d, t, total)
-        for cs, ce, ch in caps:
+        for cs, ce, ch in ([] if spec.get("no_captions") else caps):
             if cs <= t < ce:
                 parts = [w.upper() for _, w in ch]; sp = 20
                 for size in (80, 72, 64, 58, 52):
@@ -243,5 +243,7 @@ def render(spec, out_path):
         ff.stdin.write(img.tobytes())
         if fi % 300 == 0: print(f"  frame {fi}/{nframes}", flush=True)
     ff.stdin.close(); ff.wait(); os.remove(wav)
+    with open(os.path.splitext(out_path)[0] + "_timings.txt", "w") as tf:
+        for x in timeline: tf.write(f"{int(x['st'] // 60)}:{x['st'] % 60:05.2f}  {x['sc']['say']}\n")
     print("wrote", out_path, f"{total:.1f}s")
     return timeline
