@@ -4,11 +4,12 @@ Vertical (1080×1920, 30fps) animated videos for TikTok, YouTube Shorts and Reel
 
 | # | Episode | Video |
 |---|---------|-------|
-| 1 | What if Brian Clough had stayed at Leeds United? (55s) | `out/01-clough-leeds.mp4` (with soundtrack) · `out/01-clough-leeds.silent.mp4` (no audio, so you can add a trending sound) |
+| 1 | What if Brian Clough had stayed at Leeds United? (55s) | `out/01-clough-leeds.voiceover.mp4` (draft AI voiceover + soundtrack) · `out/01-clough-leeds.mp4` (soundtrack only) · `out/01-clough-leeds.silent.mp4` (no audio, so you can add a trending sound) |
 
 ## How it's made
 - `src/01-clough-leeds.html`: the animation. Open it in a browser to watch a live preview loop.
 - `render.js`: screenshots every frame with Playwright and encodes it with ffmpeg. It also writes a cue file of every hit, whoosh and tick.
+- `voiceover.py`: the narration script, with a start time for each line, voiced offline by Piper TTS (CC0 `en_US-joe-medium` voice). It prints any line that runs late.
 - `audio.py`: builds the soundtrack (pulse, drone, impacts, rewind effect) from that cue file.
 
 ```bash
