@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>What If #1 – Clough at Leeds</title>
+<style>
+@font-face{font-family:Anton;src:url(fonts/anton-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Bebas;src:url(fonts/bebas-neue-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:400;src:url(fonts/inter-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:Inter;font-weight:800;src:url(fonts/inter-latin-800-normal.woff2) format("woff2")}
+:root{
+  --bg:#0a0c11; --ink:#f4f1ea; --dim:#9aa0ab;
+  --yellow:#ffcd00; --blue:#1d428a; --red:#e3222f; --green:#2f8f4e;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bg)}
+body{font-family:Inter,sans-serif;color:var(--ink)}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--bg)}
+#world{position:absolute;inset:0}
+.scene{position:absolute;inset:0;padding:250px 150px 400px 80px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;text-align:center;opacity:0}
+.glow{position:absolute;inset:-200px;pointer-events:none;z-index:-1}
+.ghost{position:absolute;font-family:Anton;color:transparent;-webkit-text-stroke:3px rgba(255,255,255,.07);
+  font-size:900px;line-height:1;left:50%;top:50%;white-space:nowrap;z-index:-1}
+[data-in]{opacity:0;will-change:transform,opacity}
+.anton{font-family:Anton;text-transform:uppercase;letter-spacing:.5px;line-height:.98}
+.bebas{font-family:Bebas;letter-spacing:3px}
+.mono{font-family:"DejaVu Sans Mono",monospace;font-weight:700}
+.y{color:var(--yellow)} .r{color:var(--red)} .d{color:var(--dim)} .g{color:var(--green)}
+.pill{display:inline-block;padding:14px 30px;border-radius:999px;font-family:Bebas;letter-spacing:4px;font-size:46px}
+.body{font-size:44px;line-height:1.3;font-weight:400;max-width:820px}
+.body b{font-weight:800}
+.word{display:inline-block;margin:0 .14em}
+
+/* hook */
+.hook-num{font-family:Anton;font-size:250px;line-height:1;color:var(--yellow);text-shadow:0 0 60px rgba(255,205,0,.45)}
+.hook-line{font-size:138px}
+/* trophy */
+.trophy{width:300px;height:300px;filter:drop-shadow(0 0 50px rgba(255,205,0,.55))}
+/* quote */
+.quote{background:#f4f1ea;color:#121317;padding:46px 46px 40px;border-radius:10px;max-width:840px;text-align:left;
+  box-shadow:0 30px 80px rgba(0,0,0,.6);transform-origin:50% 100%;position:relative;z-index:2}
+.quote .q{font-family:Anton;font-size:72px;line-height:1.08;text-transform:uppercase}
+.quote .src{margin-top:22px;font-size:30px;color:#555;font-weight:800;letter-spacing:1px}
+.binwrap{position:relative;z-index:1;width:340px;height:300px;margin-top:40px}
+.medal{position:absolute;top:0;width:70px;height:110px}
+/* counter */
+.cal{width:600px;border-radius:24px;overflow:hidden;background:#f4f1ea;color:#111;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.cal .top{background:var(--red);color:#fff;font-family:Bebas;font-size:70px;letter-spacing:8px;padding:14px 0}
+.cal .num{font-family:Anton;font-size:340px;line-height:1.1;padding-bottom:20px}
+.chips{display:flex;flex-wrap:wrap;gap:18px;justify-content:center;margin-top:50px;max-width:840px}
+.chip{background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.18);padding:16px 28px;border-radius:14px;
+  font-family:Bebas;font-size:52px;letter-spacing:3px}
+.stamp{position:absolute;left:50%;top:44%;font-family:Anton;font-size:250px;color:var(--red);border:16px solid var(--red);
+  padding:0 40px;border-radius:20px;background:rgba(10,12,17,.35);text-shadow:0 0 40px rgba(227,34,47,.5);
+  margin-left:-35px}
+/* timeline */
+.tl{position:relative;width:840px;text-align:left;margin-top:40px;padding-left:70px}
+.tl .line{position:absolute;left:24px;top:14px;bottom:14px;width:8px;background:var(--red);transform-origin:50% 0;border-radius:4px}
+.tl .row{position:relative;padding:14px 0}
+.tl .row::before{content:"";position:absolute;left:-58px;top:34px;width:28px;height:28px;border-radius:50%;background:var(--bg);border:7px solid var(--red)}
+.tl .yr{font-family:Anton;font-size:64px;color:var(--red);margin-right:20px}
+.tl .ev{font-family:Anton;font-size:64px;text-transform:uppercase}
+.tl .row.big .ev{color:var(--yellow)}
+.leedsbox{margin-top:50px;width:840px;border:3px solid rgba(255,255,255,.2);border-radius:20px;padding:28px 34px;text-align:left;background:rgba(255,255,255,.04)}
+.leedsbox .h{font-family:Bebas;font-size:54px;letter-spacing:4px;color:var(--dim)}
+.leedsbox .l{font-family:Anton;font-size:56px;text-transform:uppercase;color:#cfd3da}
+/* rewind */
+.vhs{position:absolute;left:110px;top:230px;font-family:"DejaVu Sans Mono",monospace;font-weight:700;font-size:64px;color:#fff;
+  text-shadow:4px 0 #ff2a55,-4px 0 #19e3ff}
+.rw-year{font-family:Anton;font-size:330px;color:#fff;text-shadow:10px 0 #ff2a55,-10px 0 #19e3ff}
+.scan{position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(0,0,0,.35) 0 3px,transparent 3px 6px);pointer-events:none}
+.track{position:absolute;left:0;right:0;height:120px;background:linear-gradient(transparent,rgba(255,255,255,.18),transparent);pointer-events:none}
+/* alt cards */
+.card{width:840px;text-align:left;background:linear-gradient(90deg,rgba(29,66,138,.55),rgba(29,66,138,.15));border-left:12px solid var(--yellow);
+  border-radius:16px;padding:24px 30px;margin-top:22px}
+.card .t{font-family:Anton;font-size:56px;line-height:1.02;text-transform:uppercase}
+.card .s{font-size:32px;line-height:1.3;color:#c9d2e3;margin-top:8px}
+.card .k{font-family:Bebas;font-size:36px;letter-spacing:4px;color:var(--yellow)}
+.cups{display:flex;gap:30px;justify-content:center;margin:50px 0 20px}
+.cup{display:flex;flex-direction:column;align-items:center}
+.cup svg{width:220px;height:220px;filter:drop-shadow(0 0 40px rgba(255,205,0,.5))}
+.cup span{font-family:Anton;font-size:80px;color:var(--yellow)}
+.cta{margin-top:24px;font-size:58px;padding:20px 44px}
+/* overlays */
+#flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+#grain{position:absolute;inset:0;width:1080px;height:1920px;opacity:.09;mix-blend-mode:overlay;pointer-events:none}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,transparent 45%,rgba(0,0,0,.75) 100%);pointer-events:none}
+#brand{position:absolute;left:80px;top:150px;font-family:Bebas;font-size:40px;letter-spacing:5px;color:rgba(255,255,255,.75)}
+#brand b{color:var(--yellow);font-weight:400}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="gold" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#fff1a8"/><stop offset=".45" stop-color="#ffcd00"/><stop offset="1" stop-color="#b8860b"/>
+    </linearGradient>
+    <!-- generic big-eared cup -->
+    <symbol id="cup" viewBox="0 0 200 200">
+      <path d="M62 30h76v18c0 34-14 58-38 66-24-8-38-32-38-66z" fill="url(#gold)"/>
+      <path d="M62 44C30 38 18 62 30 86c10 20 30 22 40 14" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round"/>
+      <path d="M138 44c32-6 44 18 32 42-10 20-30 22-40 14" fill="none" stroke="url(#gold)" stroke-width="10" stroke-linecap="round"/>
+      <rect x="92" y="112" width="16" height="34" fill="url(#gold)"/>
+      <path d="M70 146h60l8 26H62z" fill="url(#gold)"/>
+      <rect x="56" y="172" width="88" height="14" rx="3" fill="#8a6a10"/>
+    </symbol>
+    <symbol id="medal" viewBox="0 0 70 110">
+      <path d="M14 0h18l8 44H22zM38 0h18l-8 44H30z" fill="#1d428a"/>
+      <path d="M26 0h8l4 44h-8z" fill="#ffcd00"/>
+      <circle cx="35" cy="75" r="30" fill="url(#gold)" stroke="#8a6a10" stroke-width="4"/>
+      <circle cx="35" cy="75" r="18" fill="none" stroke="#8a6a10" stroke-width="3"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div id="stage">
+<div id="world">
+
+  <!-- 1 · HOOK -->
+  <section class="scene" data-start="0" data-end="4.6">
+    <div class="glow" style="background:radial-gradient(circle at 50% 40%,rgba(255,205,0,.22),transparent 55%)"></div>
+    <div class="ghost" data-drift="44">44</div>
+    <div class="pill" style="background:var(--yellow);color:#111" data-in="0.05" data-fx="pop">FOOTBALL'S BIGGEST WHAT IFS</div>
+    <div class="hook-num" data-in="0.3" data-fx="slam">#1</div>
+    <div class="anton hook-line">
+      <div><span class="word y" data-in="0.75" data-fx="slam" data-sfx="tick">WHAT</span><span class="word y" data-in="0.93" data-fx="slam" data-sfx="tick">IF</span></div>
+      <div><span class="word" data-in="1.2" data-fx="slam" data-sfx="tick">BRIAN</span><span class="word" data-in="1.38" data-fx="slam" data-sfx="tick">CLOUGH</span></div>
+      <div><span class="word" data-in="1.65" data-fx="slam" data-sfx="tick">HAD</span><span class="word" data-in="1.83" data-fx="slam" data-sfx="tick">STAYED</span><span class="word" data-in="2.01" data-fx="slam" data-sfx="tick">AT</span></div>
+      <div><span class="word y" data-in="2.3" data-fx="slam" data-sfx="hit">LEEDS?</span></div>
+    </div>
+    <div class="body d" style="margin-top:30px" data-in="3.2" data-fx="fade">(He lasted <b style="color:#fff">44 days.</b>)</div>
+  </section>
+
+  <!-- 2 · 1974 -->
+  <section class="scene" data-start="4.6" data-end="10.4">
+    <div class="glow" style="background:radial-gradient(circle at 50% 35%,rgba(255,205,0,.2),transparent 55%),radial-gradient(circle at 50% 90%,rgba(29,66,138,.45),transparent 60%)"></div>
+    <div class="ghost" data-drift="1974" style="font-size:520px">1974</div>
+    <div class="mono" style="font-size:56px;letter-spacing:6px;color:var(--yellow)" data-in="4.8" data-fx="type">SUMMER 1974</div>
+    <svg class="trophy" data-in="5.4" data-fx="rise" style="margin:30px 0 10px"><use href="#cup"/></svg>
+    <div class="anton" style="font-size:120px" data-in="5.8" data-fx="slam" data-sfx="hit">LEEDS UNITED</div>
+    <div class="anton y" style="font-size:84px" data-in="6.15" data-fx="fade">CHAMPIONS OF ENGLAND</div>
+    <div class="body" style="margin-top:60px" data-in="7.5" data-fx="left" data-sfx="whoosh">But legendary boss <b>Don Revie</b> leaves…</div>
+    <div class="anton" style="font-size:96px;margin-top:10px;line-height:1.25" data-in="8.4" data-fx="right" data-sfx="whoosh">…TO MANAGE<br><span style="color:#fff;background:#c8102e;padding:0 22px">ENGLAND</span></div>
+  </section>
+
+  <!-- 3 · CLOUGH ARRIVES -->
+  <section class="scene" data-start="10.4" data-end="17.2">
+    <div class="glow" style="background:radial-gradient(circle at 50% 30%,rgba(47,143,78,.28),transparent 55%)"></div>
+    <div class="bebas d" style="font-size:60px" data-in="10.6" data-fx="fade">HIS REPLACEMENT?</div>
+    <div class="anton r" style="font-size:80px" data-in="11.0" data-fx="fade">LEEDS' FIERCEST CRITIC</div>
+    <div class="anton" style="font-size:160px;margin-top:10px" data-in="11.7" data-fx="slam" data-sfx="impact" data-shake="1">BRIAN CLOUGH</div>
+    <div class="body d" style="margin-top:10px;font-size:38px" data-in="12.3" data-fx="fade">He'd spent years calling their football <b style="color:#fff">dirty.</b></div>
+    <div class="quote" style="margin-top:46px" data-in="13.4" data-fx="rise" data-sfx="whoosh">
+      <div class="bebas" style="font-size:40px;color:var(--red)">DAY ONE · TO HIS NEW PLAYERS</div>
+      <div class="q">“You can throw all your medals in the bin… you never won any of them fairly.”</div>
+      <div class="src">— AS FAMOUSLY REPORTED</div>
+    </div>
+  </section>
+
+  <!-- 4 · 44 DAYS -->
+  <section class="scene" data-start="17.2" data-end="24.2">
+    <div class="glow" style="background:radial-gradient(circle at 50% 40%,rgba(227,34,47,.25),transparent 55%)"></div>
+    <div class="cal" data-in="17.3" data-fx="pop">
+      <div class="top">ELLAND ROAD · DAY</div>
+      <div class="num" id="counter" data-from="1" data-to="44" data-t0="17.6" data-t1="20.0">1</div>
+    </div>
+    <div class="chips">
+      <div class="chip" data-in="20.3" data-fx="pop">6 LEAGUE GAMES</div>
+      <div class="chip" style="color:var(--yellow)" data-in="20.6" data-fx="pop">JUST 1 WIN</div>
+      <div class="chip" data-in="20.9" data-fx="pop">A DRESSING ROOM IN REVOLT</div>
+    </div>
+    <div class="stamp" data-r="-9" data-in="22.0" data-fx="stamp" data-sfx="impact" data-shake="1.4">SACKED</div>
+    <div class="body d" style="margin-top:60px;font-size:36px" data-in="22.8" data-fx="fade">12 September 1974. Gone after <b style="color:#fff">44 days.</b></div>
+  </section>
+
+  <!-- 5 · WHAT HAPPENED NEXT -->
+  <section class="scene" data-start="24.2" data-end="33.2">
+    <div class="glow" style="background:radial-gradient(circle at 30% 35%,rgba(227,34,47,.28),transparent 55%)"></div>
+    <div class="bebas d" style="font-size:58px" data-in="24.35" data-fx="fade">WHAT HAPPENED NEXT?</div>
+    <div class="anton" style="font-size:96px" data-in="24.8" data-fx="slam" data-sfx="hit">CLOUGH <span class="r">→</span> <span class="r">FOREST</span></div>
+    <div class="tl">
+      <div class="line" data-grow data-t0="25.2" data-t1="29.0"></div>
+      <div class="row" data-in="25.3" data-fx="left" data-sfx="tick"><span class="yr">1975</span><span class="ev">Inherits a Div 2 side</span></div>
+      <div class="row" data-in="26.1" data-fx="left" data-sfx="tick"><span class="yr">1977</span><span class="ev">Promoted</span></div>
+      <div class="row" data-in="26.9" data-fx="left" data-sfx="hit"><span class="yr">1978</span><span class="ev">League Champions</span></div>
+      <div class="row big" data-in="27.7" data-fx="left" data-sfx="hit"><span class="yr">1979</span><span class="ev">European Cup 🏆</span></div>
+      <div class="row big" data-in="28.5" data-fx="left" data-sfx="hit"><span class="yr">1980</span><span class="ev">European Cup 🏆</span></div>
+    </div>
+    <div class="leedsbox" data-in="30.0" data-fx="rise" data-sfx="whoosh">
+      <div class="h">MEANWHILE, LEEDS…</div>
+      <div class="l">1975 · Lose European Cup final</div>
+      <div class="l" style="color:var(--red)">1982 · Relegated ↓</div>
+    </div>
+  </section>
+
+  <!-- 6 · REWIND -->
+  <section class="scene" data-start="33.2" data-end="35.5" id="rewind">
+    <div class="glow" style="background:radial-gradient(circle at 50% 45%,rgba(25,227,255,.18),transparent 55%)"></div>
+    <div class="vhs" data-blink>◀◀ REWIND</div>
+    <div class="bebas" style="font-size:60px;color:#9feaff" data-in="33.3" data-fx="fade">BUT WHAT IF HE STAYED?</div>
+    <div class="rw-year" id="rwyear" data-from="1982" data-to="1974" data-t0="33.4" data-t1="35.0">1982</div>
+    <div class="scan"></div>
+    <div class="track" id="track"></div>
+  </section>
+
+  <!-- 7 · ALTERNATE TIMELINE -->
+  <section class="scene" data-start="35.5" data-end="45.6">
+    <div class="glow" style="background:radial-gradient(circle at 50% 30%,rgba(29,66,138,.6),transparent 60%),radial-gradient(circle at 50% 95%,rgba(255,205,0,.12),transparent 50%)"></div>
+    <div class="bebas y" style="font-size:52px" data-in="35.6" data-fx="fade">THE ALTERNATE TIMELINE</div>
+    <div class="anton" style="font-size:96px" data-in="35.9" data-fx="slam" data-sfx="hit">CLOUGH'S LEEDS</div>
+    <div class="card" data-in="36.6" data-fx="right" data-sfx="whoosh">
+      <div class="k">WHAT IF…</div>
+      <div class="t">Peter Taylor joins him at Elland Road</div>
+      <div class="s">In reality, his right-hand man stayed at Brighton. Clough walked in alone.</div>
+    </div>
+    <div class="card" data-in="38.8" data-fx="right" data-sfx="whoosh">
+      <div class="k">WHAT IF…</div>
+      <div class="t">He wins over Bremner, Giles &amp; co.</div>
+      <div class="s">Rebuilding the champions instead of going to war with them.</div>
+    </div>
+    <div class="card" data-in="41.0" data-fx="right" data-sfx="whoosh">
+      <div class="k">WHAT IF…</div>
+      <div class="t">1975: Leeds beat Bayern in Paris</div>
+      <div class="s">The final they actually lost 2–0. Champions of Europe.</div>
+    </div>
+    <div class="card" data-in="43.2" data-fx="right" data-sfx="whoosh">
+      <div class="k">AND…</div>
+      <div class="t">Forest never leave Division Two</div>
+      <div class="s">No miracle on the Trent. No back-to-back European Cups.</div>
+    </div>
+  </section>
+
+  <!-- 8 · DYNASTY -->
+  <section class="scene" data-start="45.6" data-end="48.8">
+    <div class="glow" style="background:radial-gradient(circle at 50% 45%,rgba(255,205,0,.3),transparent 55%)"></div>
+    <div class="anton" style="font-size:110px" data-in="45.7" data-fx="slam" data-sfx="hit">LEEDS UNITED</div>
+    <div class="anton y" style="font-size:96px" data-in="46.0" data-fx="fade">KINGS OF EUROPE?</div>
+    <div class="cups">
+      <div class="cup" data-in="46.5" data-fx="pop" data-sfx="hit"><svg><use href="#cup"/></svg><span>'75</span></div>
+      <div class="cup" data-in="46.9" data-fx="pop" data-sfx="hit"><svg><use href="#cup"/></svg><span>'79</span></div>
+      <div class="cup" data-in="47.3" data-fx="pop" data-sfx="impact" data-shake="0.8"><svg><use href="#cup"/></svg><span>'80</span></div>
+    </div>
+  </section>
+
+  <!-- 9 · OUTRO -->
+  <section class="scene" data-start="48.8" data-end="55.5">
+    <div class="glow" style="background:radial-gradient(circle at 50% 35%,rgba(227,34,47,.22),transparent 55%)"></div>
+    <div class="anton" style="font-size:150px" data-in="49.0" data-fx="slam" data-sfx="hit">DYNASTY…</div>
+    <div class="anton r" style="font-size:120px" data-in="49.6" data-fx="slam" data-sfx="impact" data-shake="0.8">…OR DISASTER?</div>
+    <div class="body" style="margin-top:36px" data-in="50.5" data-fx="fade">Would Clough have built an empire at Elland Road — or burned it to the ground?</div>
+    <div class="pill cta" style="background:var(--yellow);color:#111;margin-top:60px" data-in="52.0" data-fx="pop" data-sfx="tick">COMMENT YOUR VERDICT 👇</div>
+    <div class="pill cta" style="border:4px solid #fff" data-in="52.7" data-fx="pop" data-sfx="tick">FOLLOW FOR WHAT IF #2</div>
+  </section>
+
+</div>
+<canvas id="grain" width="360" height="640"></canvas>
+<div id="vig"></div>
+<div id="brand">WHAT IF? <b>#1</b></div>
+<div id="flash"></div>
+</div>
+
+<script>
+const DURATION = 55.5, FPS = 30;
+const clamp=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const prog=(t,a,b)=>clamp((t-a)/(b-a));
+const eOut=x=>1-Math.pow(1-x,3);
+const eIn=x=>x*x;
+const eInOut=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2;
+const eBack=x=>{const c=1.9;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+
+const scenes=[...document.querySelectorAll('.scene')].map(el=>({el,a:+el.dataset.start,b:+el.dataset.end}));
+const items=[...document.querySelectorAll('[data-in]')];
+const counters=[...document.querySelectorAll('[data-from]')];
+const shakes=[...document.querySelectorAll('[data-shake]')].map(e=>({t:+e.dataset.in,k:+e.dataset.shake}));
+const flashes=[...document.querySelectorAll('[data-fx="stamp"],[data-sfx="impact"]')].map(e=>+e.dataset.in);
+const world=document.getElementById('world'), flash=document.getElementById('flash');
+
+function fx(el,t){
+  const t0=+el.dataset.in, kind=el.dataset.fx||'fade', r=+(el.dataset.r||0);
+  let o=0,x=0,y=0,s=1,blur=0;
+  if(kind==='type'){
+    if(!el.dataset.full) el.dataset.full=el.textContent;
+    const full=el.dataset.full, n=Math.floor(clamp((t-t0)/0.06,0,full.length));
+    el.textContent=full.slice(0,n)+(t>=t0&&n<full.length&&Math.floor(t*8)%2?'▌':'');
+    el.style.opacity=t>=t0?1:0; return;
+  }
+  const D={slam:.28,stamp:.22,pop:.45,fade:.5,left:.5,right:.5,rise:.6}[kind]||.5;
+  const p=prog(t,t0,t0+D);
+  if(kind==='slam'){const k=eOut(p);o=clamp(p*3);s=2.1-1.1*k;blur=(1-k)*10}
+  else if(kind==='stamp'){const k=eIn(p);o=clamp(p*4);s=3.2-2.2*k}
+  else if(kind==='pop'){o=clamp(p*3);s=.3+.7*eBack(p)}
+  else if(kind==='fade'){const k=eOut(p);o=p;y=30*(1-k)}
+  else if(kind==='left'){const k=eOut(p);o=clamp(p*2);x=-160*(1-k)}
+  else if(kind==='right'){const k=eOut(p);o=clamp(p*2);x=160*(1-k)}
+  else if(kind==='rise'){const k=eOut(p);o=clamp(p*2);y=180*(1-k);s=.92+.08*k}
+  el.style.opacity=o;
+  el.style.transform=`translate(${x}px,${y}px) scale(${s}) rotate(${r}deg)`+(kind==='stamp'?' translate(-50%,-50%)':'');
+  el.style.filter=blur>0.2?`blur(${blur}px)`:'none';
+  if(kind==='stamp') el.style.transformOrigin='0 0';
+}
+
+function counterVal(el,t){
+  const a=+el.dataset.from,b=+el.dataset.to,p=eInOut(prog(t,+el.dataset.t0,+el.dataset.t1));
+  return Math.round(a+(b-a)*p);
+}
+
+// medals falling into the bin (scene 3) – drawn as a small extra layer inside the quote's scene
+const medalTimes=[];
+
+// grain
+const g=document.getElementById('grain'),gx=g.getContext('2d'),gimg=gx.createImageData(360,640);
+function grain(frame){
+  let s=(frame*9301+49297)%233280||1;
+  const d=gimg.data;
+  for(let i=0;i<d.length;i+=4){s=(s*16807)%2147483647;const v=s&255;d[i]=d[i+1]=d[i+2]=v;d[i+3]=255}
+  gx.putImageData(gimg,0,0);
+}
+
+function renderFrame(t){
+  // scenes
+  for(const sc of scenes){
+    const fin=prog(t,sc.a,sc.a+.25), fout=1-prog(t,sc.b-.3,sc.b);
+    const o=Math.min(fin,fout);
+    sc.el.style.opacity=o;
+    sc.el.style.visibility=o>0?'visible':'hidden';
+    const z=1+.04*(1-fout);
+    sc.el.style.transform=`scale(${z})`;
+    sc.el.querySelectorAll('[data-drift]').forEach(gh=>{
+      const lt=t-sc.a; gh.style.transform=`translate(-50%,-50%) translateX(${-30*lt}px) scale(${1+.02*lt})`;
+    });
+  }
+  for(const el of items) fx(el,t);
+  for(const el of counters) el.textContent=counterVal(el,t);
+  document.querySelectorAll('[data-grow]').forEach(el=>{
+    el.style.transform=`scaleY(${eInOut(prog(t,+el.dataset.t0,+el.dataset.t1))})`;
+  });
+  // rewind fx
+  const rw=document.getElementById('rewind'), inRw=t>=33.2&&t<35.5;
+  document.querySelector('[data-blink]').style.opacity=Math.floor(t*4)%2?1:.25;
+  document.getElementById('track').style.top=((t*2600)%2200-200)+'px';
+  world.style.filter=inRw?`saturate(.7) contrast(1.15) hue-rotate(${Math.sin(t*40)*8}deg)`:'none';
+  // shake
+  let sx=0,sy=0;
+  for(const sh of shakes){const d=t-sh.t;if(d>=.2&&d<.75){const a=sh.k*28*Math.exp(-(d-.2)*7);sx+=a*Math.sin(d*90);sy+=a*Math.cos(d*77)}}
+  if(inRw){sx+=Math.sin(t*93)*6}
+  world.style.transform=`translate(${sx}px,${sy}px)`;
+  // flash
+  let f=0;for(const ft of flashes){const d=t-ft-.2;if(d>=0&&d<.18)f=Math.max(f,.45*(1-d/.18))}
+  flash.style.opacity=f;
+  // scene-specific: medals
+  renderMedals(t);
+  grain(Math.round(t*FPS));
+}
+
+// medals: build once
+const quote=document.querySelector('.quote');
+const bin=document.createElement('div');bin.className='binwrap';bin.setAttribute('data-bin','');
+bin.innerHTML=`<svg viewBox="0 0 340 300" style="position:absolute;inset:0">
+  <rect x="70" y="110" width="200" height="180" rx="10" fill="#3a3f4a"/>
+  <g stroke="#262a32" stroke-width="8"><line x1="120" y1="130" x2="120" y2="270"/><line x1="170" y1="130" x2="170" y2="270"/><line x1="220" y1="130" x2="220" y2="270"/></g>
+  <rect x="55" y="92" width="230" height="26" rx="8" fill="#4d5361"/></svg>`;
+quote.after(bin);
+const medals=[0,1,2].map(i=>{const m=document.createElementNS('http://www.w3.org/2000/svg','svg');m.setAttribute('viewBox','0 0 70 110');m.setAttribute('class','medal');
+  m.innerHTML='<use href="#medal"/>';m.style.left=(105+i*65)+'px';bin.prepend(m);const t0=14.7+i*.45;medalTimes.push(t0+.5);return {m,t0}});
+function renderMedals(t){
+  bin.style.opacity=clamp((t-14.4)/.3);
+  for(const {m,t0} of medals){
+    const p=prog(t,t0,t0+.5);
+    const y=-360+430*eIn(p);
+    m.style.transform=`translateY(${y}px) rotate(${(1-p)*-40+p*20}deg)`;
+    m.style.opacity=t<t0?0:(p<.85?1:1-(p-.85)/.15);
+  }
+}
+
+// cue list for the soundtrack
+function buildCues(){
+  const c={impact:[],hit:[],tick:[],whoosh:[],type:[],clink:medalTimes.slice(),rewind:[[33.2,35.5]],riser:[[20.4,22.0],[47.6,49.0]],count:[]};
+  for(const el of items){const s=el.dataset.sfx,t0=+el.dataset.in;
+    if(el.dataset.fx==='type'){const n=(el.dataset.full||el.textContent).length;for(let i=0;i<n;i++)c.type.push(t0+i*.06)}
+    else if(s&&c[s]) c[s].push(t0+(s==='impact'||s==='hit'?.2:0));
+  }
+  const cnt=document.getElementById('counter');let last=null;
+  for(let f=0;f<DURATION*FPS;f++){const t=f/FPS,v=counterVal(cnt,t);if(t>=17.6&&last!==null&&v!==last)c.count.push(t);last=v}
+  return c;
+}
+window.DURATION=DURATION;window.FPS=FPS;window.renderFrame=renderFrame;window.buildCues=buildCues;
+
+// live preview when opened directly in a browser
+if(!navigator.webdriver){const st=performance.now();(function loop(){renderFrame(((performance.now()-st)/1000)%DURATION);requestAnimationFrame(loop)})()}
+else renderFrame(0);
+</script>
+</body>
+</html>
