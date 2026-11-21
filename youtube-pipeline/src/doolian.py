@@ -318,3 +318,96 @@ def banner_v2():
 
 if __name__ == "__main__" and "v2" in sys.argv:
     b = banner_v2(); b.save(os.path.join(OUT, "banner_timeline.png")); banner_preview(b).save(os.path.join(OUT, "banner_timeline_zones.png")); print("v2 ok")
+
+
+# ---------------- banner v3: engraved banknote / luxury ----------------
+EMER_IN, EMER_OUT = (14, 44, 34), (2, 8, 6)
+
+
+def gold_gradient(size, top=(255, 232, 160), mid=(222, 170, 72), bot=(150, 98, 30)):
+    w, h = size; y = np.linspace(0, 1, h)[:, None]
+    c = np.where(y < 0.5, np.array(top) * (1 - y * 2) + np.array(mid) * (y * 2), np.array(mid) * (2 - y * 2) + np.array(bot) * (y * 2 - 1))
+    return Image.fromarray(np.repeat(c[:, None, :], w, 1).squeeze(2).astype(np.uint8) if c.ndim == 3 else np.repeat(c[:, None, :], w, 1).astype(np.uint8))
+
+
+def spaced_text(img, cx, cy, text, font, tracking, fill_img=None, fill=None, shadow=True):
+    """Letter-spaced text centred at (cx, cy); filled with a gradient image or a flat colour."""
+    d = ImageDraw.Draw(img)
+    widths = [d.textlength(ch, font=font) for ch in text]
+    total = sum(widths) + tracking * (len(text) - 1); x = cx - total / 2
+    mask = Image.new("L", img.size)
+    md = ImageDraw.Draw(mask)
+    for ch, w in zip(text, widths): md.text((x, cy), ch, font=font, fill=255, anchor="lm"); x += w + tracking
+    if shadow:
+        sh = mask.filter(ImageFilter.GaussianBlur(10)).point(lambda v: int(v * 0.8))
+        img.paste(Image.new("RGB", img.size, (0, 0, 0)), (6, 10), sh)
+    if fill_img is not None:
+        bb = mask.getbbox(); g = fill_img.resize((bb[2] - bb[0], bb[3] - bb[1]))
+        layer = Image.new("RGB", img.size); layer.paste(g, (bb[0], bb[1])); img.paste(layer, (0, 0), mask)
+    else:
+        img.paste(Image.new("RGB", img.size, fill), (0, 0), mask)
+    return total
+
+
+def guilloche_rosette(d, cx, cy, R, r, p, turns, col, width=2, scale=1.0):
+    """Spirograph-style rosette like the engraving on banknotes."""
+    pts = []
+    for t in np.linspace(0, 2 * math.pi * turns, 6000):
+        x = (R - r) * math.cos(t) + p * math.cos((R - r) / r * t)
+        y = (R - r) * math.sin(t) - p * math.sin((R - r) / r * t)
+        pts.append((cx + x * scale, cy + y * scale))
+    d.line(pts, fill=col, width=width)
+
+
+def guilloche_band(d, y0, height, col, n=7, waves=9, width=2, phase=0.0):
+    for k in range(n):
+        ph = k * math.pi / n + phase
+        pts = [(x, y0 + height / 2 + height / 2 * math.sin(x / BW * 2 * math.pi * waves + ph)) for x in np.linspace(0, BW, 900)]
+        d.line(pts, fill=col, width=width)
+
+
+def banner_v3():
+    img = radial((BW, BH), EMER_IN, EMER_OUT, cy=0.5, r=0.62)
+    # engraving layer (thin gold lines, low opacity)
+    eng = Image.new("RGBA", (BW, BH), (0, 0, 0, 0)); ed = ImageDraw.Draw(eng)
+    for cx, cy in ((260, 720), (2300, 720)):
+        guilloche_rosette(ed, cx, cy, 300, 47, 160, 47, (226, 186, 100, 60), 2, 1.25)
+        guilloche_rosette(ed, cx, cy, 300, 71, 120, 71, (226, 186, 100, 40), 2, 0.8)
+    guilloche_band(ed, 70, 120, (226, 186, 100, 45))
+    guilloche_band(ed, BH - 190, 120, (226, 186, 100, 45), phase=1.3)
+    for x in range(0, BW, 14): ed.line([(x, 0), (x, 26)], fill=(226, 186, 100, 60), width=2); ed.line([(x, BH - 26), (x, BH)], fill=(226, 186, 100, 60), width=2)
+    img.paste(eng, (0, 0), eng)
+    # soft bokeh glow
+    bok = Image.new("RGBA", (BW, BH), (0, 0, 0, 0)); bd = ImageDraw.Draw(bok); rng = np.random.default_rng(5)
+    for _ in range(40):
+        x, y, r = rng.uniform(0, BW), rng.uniform(0, BH), rng.uniform(20, 90)
+        if SAFE[0] - 60 < x < SAFE[2] + 60 and SAFE[1] - 60 < y < SAFE[3] + 60: continue
+        bd.ellipse((x - r, y - r, x + r, y + r), fill=(255, 210, 120, int(rng.uniform(14, 40))))
+    bok = bok.filter(ImageFilter.GaussianBlur(18)); img.paste(bok, (0, 0), bok)
+    # gold coins: blurred in the foreground, sharp in the mid-ground, all outside the text area
+    for x, y, r, sym, blur in ((120, 220, 150, "$", 10), (2470, 1250, 170, "£", 12), (2440, 190, 90, "$", 0), (180, 1260, 95, "£", 0),
+                               (620, 1180, 60, "ƒ", 0), (1960, 230, 56, "¥", 0), (520, 260, 44, "$", 3), (2040, 1220, 48, "$", 3)):
+        layer = Image.new("RGB", (BW, BH)); gold_coin(layer, x, y, r, monogram=sym, shadow=False)
+        m = Image.new("L", (BW, BH)); ImageDraw.Draw(m).ellipse((x - r, y - r, x + r, y + r), fill=255)
+        if blur: layer = layer.filter(ImageFilter.GaussianBlur(blur)); m = m.filter(ImageFilter.GaussianBlur(blur))
+        sh = Image.new("L", (BW, BH)); ImageDraw.Draw(sh).ellipse((x - r + 12, y - r + 22, x + r + 12, y + r + 22), fill=120)
+        img.paste(Image.new("RGB", (BW, BH)), (0, 0), sh.filter(ImageFilter.GaussianBlur(18 + blur)))
+        img.paste(layer, (0, 0), m)
+    # central vignette so the lettering reads cleanly
+    vig = Image.new("L", (BW, BH)); ImageDraw.Draw(vig).ellipse((SAFE[0] - 40, SAFE[1] - 120, SAFE[2] + 40, SAFE[3] + 120), fill=150)
+    img.paste(Image.new("RGB", (BW, BH), (2, 10, 8)), (0, 0), vig.filter(ImageFilter.GaussianBlur(90)))
+    # lettering
+    cx, cy = BW // 2, (SAFE[1] + SAFE[3]) // 2
+    gg = gold_gradient((10, 200))
+    spaced_text(img, cx, cy - 40, "DOOLIAN DOLLARS", F("serif_bold", 150), 14, fill_img=gg)
+    d = ImageDraw.Draw(img)
+    for sgn in (-1, 1):
+        d.line([(cx + sgn * 60, cy + 70), (cx + sgn * 560, cy + 70)], fill=(212, 170, 80), width=3)
+        d.ellipse((cx + sgn * 560 - 6, cy + 64, cx + sgn * 560 + 6, cy + 76), fill=(212, 170, 80))
+    d.polygon([(cx, cy + 56), (cx + 14, cy + 70), (cx, cy + 84), (cx - 14, cy + 70)], fill=(232, 190, 96))
+    spaced_text(img, cx, cy + 135, "THE WILDEST STORIES IN THE HISTORY OF MONEY", F("sans_med", 40), 8, fill=(236, 222, 186), shadow=False)
+    return img
+
+
+if __name__ == "__main__" and "v3" in sys.argv:
+    b = banner_v3(); b.save(os.path.join(OUT, "banner_luxe.png")); banner_preview(b).save(os.path.join(OUT, "banner_luxe_zones.png")); print("v3 ok")
