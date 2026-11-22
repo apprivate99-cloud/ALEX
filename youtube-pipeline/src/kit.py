@@ -486,8 +486,25 @@ def ending(lt, dur, T):
         pass
     return img
 
+CHANNEL = "DOOLIAN DOLLARS"
+
+
+def brand_coin(d, x, y, r):
+    """Small version of the Doolian Dollars gold coin logo."""
+    d.ellipse((x - r, y - r, x + r, y + r), fill=(140, 96, 28))
+    d.ellipse((x - r * 0.9, y - r * 0.9, x + r * 0.9, y + r * 0.9), fill=(238, 194, 96))
+    d.ellipse((x - r * 0.74, y - r * 0.74, x + r * 0.74, y + r * 0.74), outline=(140, 96, 28), width=max(int(r * 0.08), 2))
+    d.text((x + r * 0.04, y + r * 0.05), "DD", font=F("serif_bold", int(r * 0.95)), fill=(140, 96, 28), anchor="mm")
+    d.text((x, y), "DD", font=F("serif_bold", int(r * 0.95)), fill=(184, 128, 40), anchor="mm")
+
+
 def chrome(d, t, total):
-    pill(d, 100, "MONEY HISTORY", (30, 20, 12), GOLD, 32)
+    # channel badge: gold coin + name on a dark pill, centred at the top
+    f = F("sans_black", 32); tw = d.textlength(CHANNEL, font=f); r = 26
+    w = r * 2 + 14 + tw + 40; x0 = (W - w) / 2; y0 = 92
+    d.rounded_rectangle((x0, y0, x0 + w, y0 + 2 * r + 16), r + 8, fill=(12, 10, 10, 200), outline=(212, 170, 80), width=3)
+    brand_coin(d, x0 + 8 + r, y0 + 8 + r, r)
+    d.text((x0 + 8 + 2 * r + 14, y0 + 8 + r), CHANNEL, font=f, fill=(246, 210, 120), anchor="lm")
     d.rectangle((0, H - 10, W * t / total, H), fill=GOLD)
 
 theme = dict(chrome=chrome, cap=(255, 255, 255), cap_hi=(255, 206, 72), cap_stroke=(0, 0, 0), cap_y=1450)

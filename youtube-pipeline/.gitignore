@@ -7,3 +7,4 @@ src/*.log
 src/*.png
 src/*.mp4
 src/*_timings.txt
+src/*_archer.log
