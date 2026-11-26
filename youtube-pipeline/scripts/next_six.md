@@ -63,7 +63,7 @@ Leeson's bets collapsed. The hidden losses grew to around eight hundred and twen
 
 Leeson fled, leaving a note that simply said, I'm sorry.
 
-On February twenty sixth, nineteen ninety five, Barings collapsed. It was later sold to the Dutch bank ING, for just one pound.
+On February twenty sixth, nineteen ninety five, Barings collapsed. It was later sold to a Dutch bank, for just one pound.
 
 Leeson was caught, and sentenced to six and a half years in a Singapore prison.
 
