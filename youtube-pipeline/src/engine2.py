@@ -127,7 +127,7 @@ def music_track(path, n, voice, amp, drops=()):
 
 # ---------- render ----------
 def render(spec, out_path):
-    check_words([sc["say"] for sc in spec["scenes"]])
+    if not spec.get("narration"): check_words([sc["say"] for sc in spec["scenes"]])  # a recorded voice says the words itself
     gapd = spec.get("gap", 0.22)
     timeline, t0 = [], 0.25
     if spec.get("narration"):
